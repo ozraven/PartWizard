@@ -1,0 +1,3 @@
+*.suo
+/PartWizard/*.user
+Debug
