@@ -19,7 +19,9 @@ namespace PartWizard
         private const float DefaultHeight = 400;
         private const float MaximumWidth = 600;    // TODO: Review what this does.
         private const float MaximumHeight = 500;   // TODO: Review what this does.
-        
+
+        private const string WindowPositionConfigurationName = "PART_WIZARD_WINDOW";
+
         private string pluginName;
         private string windowTitle;
 
@@ -83,16 +85,16 @@ namespace PartWizard
             {
                 this.partWizardWindowId = gameObject.GetInstanceID();
 
-                float x = Configuration.GetValue("x", DefaultX);
-                float y = Configuration.GetValue("y", DefaultY);
-                float width = Configuration.GetValue("width", DefaultWidth);
-                float height = Configuration.GetValue("height", DefaultHeight);
-
-                // TODO: Do I need to clean this up?
-                this.window = new Rect(x, y, width, height);
+                this.window = Configuration.GetValue(PartWizardWindow.WindowPositionConfigurationName, new Rect(PartWizardWindow.DefaultX, PartWizardWindow.DefaultY, PartWizardWindow.DefaultWidth, PartWizardWindow.DefaultHeight));
 
                 this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - MaximumWidth);
                 this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - MaximumHeight);
+            }
+            else
+            {
+                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
+
+                Configuration.Save();
             }
 
             this.UpdateToolbarIcon();
@@ -131,10 +133,7 @@ namespace PartWizard
             }
             else
             {
-                Configuration.SetValue("x", (int)this.window.x);
-                Configuration.SetValue("y", (int)this.window.y);
-                Configuration.SetValue("width", (int)this.window.width);
-                Configuration.SetValue("height", (int)this.window.height);
+                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
 
                 Configuration.Save();
             }
@@ -241,7 +240,7 @@ namespace PartWizard
                     if(mouseOver)
                     {
                         part.SetHighlight(true);
-
+                        
                         this.controllingPartHighlight = true;
                         this.highlightedPartId = part.uid;
                     }
@@ -262,7 +261,7 @@ namespace PartWizard
             }
 
             GUILayout.EndScrollView();
-
+            
             #region Status Area
 
             GUILayout.Space(3);
@@ -287,7 +286,7 @@ namespace PartWizard
             #endregion
 
             // Make the window draggable.
-            GUI.DragWindow();
+            GUI.DragWindow(this.window);
 
             GUIControls.EndLayout();
         }

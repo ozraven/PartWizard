@@ -27,6 +27,7 @@ namespace PartWizard
 
             GUIControls.layoutStarted = false;
         }
+
         /// <summary>
         /// Provides a small button that displays in the title bar of the GUILayout window.
         /// </summary>
@@ -48,7 +49,7 @@ namespace PartWizard
 
             return result;
         }
-
+        
         /// <summary>
         /// Provides a GUILayout button control that can detect if the mouse is within its area.
         /// </summary>
