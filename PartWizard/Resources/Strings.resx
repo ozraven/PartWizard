@@ -129,6 +129,10 @@
   <data name="DeletePartDescription" xml:space="preserve">
     <value>delete the highlighted part.</value>
   </data>
+  <data name="GuiRenderErrorTextFormat" xml:space="preserve">
+    <value>An error has occurred in {0}. If the error keeps occurring, please post a support request message in the AddOns forum thread for {0}. It will be very helpful to include as much information as possible, such as: steps to reproduce the problem, a .craft file, list of addons, and especially the log file at the following location on your computer:</value>
+    <comment>Displayed when an unhandled exception originating in the GUI occurs, {0} = plugin name.</comment>
+  </data>
   <data name="StatusLabelTextFormat" xml:space="preserve">
     <value>{0} Part(s)</value>
     <comment>Displayed at the bottom of PartWizardWindow, {0} = part count.</comment>

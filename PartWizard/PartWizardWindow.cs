@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 
 using UnityEngine;
@@ -19,6 +20,9 @@ namespace PartWizard
         private const float DefaultHeight = 400;
         private const float MaximumWidth = 600;    // TODO: Review what this does.
         private const float MaximumHeight = 500;   // TODO: Review what this does.
+
+        private readonly Color TooltipLabelColor = Color.yellow;
+        private readonly Color PartCountLabelColor = Color.white;
 
         private const string WindowPositionConfigurationName = "PART_WIZARD_WINDOW";
 
@@ -42,6 +46,8 @@ namespace PartWizard
         private uint highlightedPartId = 0;
 
         private Vector2 scrollPosition;
+
+        private bool renderError = false;
         
         public void Awake()
         {
@@ -54,11 +60,10 @@ namespace PartWizard
                 this.windowTitle = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", this.pluginName, version);
 
                 this.tooltipLabelStyle = new GUIStyle();
-                // TODO: Magic numbers.
-                this.tooltipLabelStyle.normal.textColor = Color.yellow;
+                this.tooltipLabelStyle.normal.textColor = TooltipLabelColor;
 
                 this.partCountLabelStyle = new GUIStyle();
-                this.partCountLabelStyle.normal.textColor = Color.white;
+                this.partCountLabelStyle.normal.textColor = PartCountLabelColor;
                 this.partCountLabelStyle.alignment = TextAnchor.LowerRight;
 
                 // Always start hidden to stay out of the way.
@@ -92,9 +97,12 @@ namespace PartWizard
             }
             else
             {
-                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
+                if(!this.renderError)
+                {
+                    Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
 
-                Configuration.Save();
+                    Configuration.Save();
+                }
             }
 
             this.UpdateToolbarIcon();
@@ -133,9 +141,12 @@ namespace PartWizard
             }
             else
             {
-                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
+                if(!this.renderError)
+                {
+                    Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
 
-                Configuration.Save();
+                    Configuration.Save();
+                }
             }
 
             this.partWizardToolbarButton.Destroy(); this.partWizardToolbarButton = null;
@@ -145,150 +156,189 @@ namespace PartWizard
         {
             GUIControls.BeginLayout();
 
-            // TODO: Wrap all of this in a try...finally, and in the finally call EndLayout, so we don't start spewing GUI exceptions to the log.
-
-            // TODO: When something does go wrong, set a flag so we render a simple message asking the user to check the forums and/or post their log files.
-
-            if(GUIControls.TitleBarButton(this.window))
+            try
             {
-                // TODO: Duplicate code. Move to a method and call it.
-                this.visible = false;
-
-                this.UpdateToolbarIcon();
-            }
-
-            List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
-
-            GUILayout.BeginVertical();
-
-            this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
-
-            foreach(Part part in parts)
-            {
-                bool mouseOver = false;         // Must be updated (|=) by each control that can trigger part highlighting when the mouse is over the part in the list.
-
-                GUILayout.BeginHorizontal();
-
-                #region Part Label
-
-                bool labelMouseOver = false;    // Will be set to true if the mouse is over the part's label.
-
-                // We want to draw the part's name first, but it won't exist when the time comes to render it if the user chooses to delete it. DisplayName() must be
-                // careful to make sure the part still exists.
-                GUIControls.MouseOverLabel(new GUIContent(part.DisplayName(), part.partInfo.name), out labelMouseOver);
-
-                mouseOver |= labelMouseOver;
-
-                #endregion
-
-                // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
-                GUI.enabled = !EditorLogic.SelectedPart;
-
-                #region Break Symmetry Button
-
-                bool breakSymmetryMouseOver = false;
-
-                GUI.enabled = !EditorLogic.SelectedPart && PartWizard.IsSymmetricalRoot(part);
-
-                string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
-
-                // TODO: Magic numbers.
-                if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, GUILayout.Width(22)))
+                if(GUIControls.TitleBarButton(this.window))
                 {
-                    PartWizard.BreakSymmetry(part);
+                    // TODO: Duplicate code. Move to a method and call it.
+                    this.visible = false;
 
-                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] {0} symmetry broken", part.name));
+                    this.UpdateToolbarIcon();
                 }
 
-                mouseOver |= breakSymmetryMouseOver;
-
-                #endregion
-
-                #region Delete Button
-
-                bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
-
-                bool deleted = false;                   // Will be set to true if the delete button was pressed.
-
-                // Only enable the delete button if there are no parts selected, there is more than just the root part, and the part has no children because we can't pluck
-                // parts from between other parts.
-                GUI.enabled = !EditorLogic.SelectedPart && parts.Count > 1 && (part.children.Count == 0);
-
-                string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
-
-                // TODO: Magic numbers.
-                if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, GUILayout.Width(22)))
+                if(!renderError)
                 {
-                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] deleting part {0}", part.name));
+                    List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
 
-                    PartWizard.Delete(part);
+                    GUILayout.BeginVertical();
 
-                    // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
-                    deleted = true;
-                }
+                    this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
-                mouseOver |= deleteButtonMouseOver;
-
-                #endregion
-
-                GUI.enabled = true;
-
-                GUILayout.EndHorizontal();      // End of row for this part.
-
-                if(!deleted)
-                {
-                    if(mouseOver)
+                    foreach(Part part in parts)
                     {
-                        part.SetHighlight(true);
-                        
-                        this.controllingPartHighlight = true;
-                        this.highlightedPartId = part.uid;
+                        bool mouseOver = false;         // Must be updated (|=) by each control that can trigger part highlighting when the mouse is over the part in the list.
+
+                        GUILayout.BeginHorizontal();
+
+                        #region Part Label
+
+                        bool labelMouseOver = false;    // Will be set to true if the mouse is over the part's label.
+
+                        // We want to draw the part's name first, but it won't exist when the time comes to render it if the user chooses to delete it. DisplayName() must be
+                        // careful to make sure the part still exists.
+                        GUIControls.MouseOverLabel(new GUIContent(part.DisplayName(), part.partInfo.name), out labelMouseOver);
+
+                        mouseOver |= labelMouseOver;
+
+                        #endregion
+
+                        // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
+                        GUI.enabled = !EditorLogic.SelectedPart;
+
+                        #region Break Symmetry Button
+
+                        bool breakSymmetryMouseOver = false;
+
+                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.IsSymmetricalRoot(part);
+
+                        string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
+
+                        // TODO: Magic numbers.
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, GUILayout.Width(22)))
+                        {
+                            PartWizard.BreakSymmetry(part);
+
+                            Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] {0} symmetry broken", part.name));
+                        }
+
+                        mouseOver |= breakSymmetryMouseOver;
+
+                        #endregion
+
+                        #region Delete Button
+
+                        bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
+
+                        bool deleted = false;                   // Will be set to true if the delete button was pressed.
+
+                        // Only enable the delete button if there are no parts selected, there is more than just the root part, and the part has no children because we can't pluck
+                        // parts from between other parts.
+                        GUI.enabled = !EditorLogic.SelectedPart && parts.Count > 1 && (part.children.Count == 0);
+
+                        string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
+
+                        // TODO: Magic numbers.
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, GUILayout.Width(22)))
+                        {
+                            Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] deleting part {0}", part.name));
+
+                            PartWizard.Delete(part);
+
+                            // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
+                            deleted = true;
+                        }
+
+                        mouseOver |= deleteButtonMouseOver;
+
+                        #endregion
+
+                        GUI.enabled = true;
+
+                        GUILayout.EndHorizontal();      // End of row for this part.
+
+                        if(!deleted)
+                        {
+                            if(mouseOver)
+                            {
+                                part.SetHighlight(true);
+
+                                this.controllingPartHighlight = true;
+                                this.highlightedPartId = part.uid;
+                            }
+                            else if(controllingPartHighlight && part.uid == this.highlightedPartId)
+                            {
+                                part.SetHighlight(false);
+
+                                this.controllingPartHighlight = false;
+                                this.highlightedPartId = 0;
+                            }
+                        }
+
+                        // If we deleted a part, then just jump out of the loop since the parts list has been modified.
+                        if(deleted)
+                        {
+                            break;
+                        }
                     }
-                    else if(controllingPartHighlight && part.uid == this.highlightedPartId)
+
+                    GUILayout.EndScrollView();
+
+                    #region Status Area
+
+                    GUILayout.Space(3);
+
+                    string status = default(string);
+
+                    int partCount = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts.Count : 0;
+
+                    if(!string.IsNullOrEmpty(GUI.tooltip))
                     {
-                        part.SetHighlight(false);
-
-                        this.controllingPartHighlight = false;
-                        this.highlightedPartId = 0;
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTooltipTextFormat, partCount, GUI.tooltip);
                     }
-                }
+                    else
+                    {
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTextFormat, partCount);
+                    }
 
-                // If we deleted a part, then just jump out of the loop since the parts list has been modified.
-                if(deleted)
+                    GUILayout.Label(status, this.tooltipLabelStyle);
+
+                    GUILayout.EndVertical();
+
+                    #endregion
+                }
+                else
                 {
-                    break;
+                    GUILayout.BeginVertical();
+
+                    GUILayoutOption maxWidth = GUILayout.MaxWidth(this.window.width);
+                    GUILayoutOption maxHeight = GUILayout.MaxHeight(this.window.height / 2);    // Magic number 2 because we're going to have only 2 GUI controls, below.
+                    GUILayoutOption lockWidth = GUILayout.ExpandWidth(false);
+                    GUILayoutOption lockHeight = GUILayout.ExpandHeight(false);
+
+                    GUILayout.Label(string.Format(CultureInfo.CurrentCulture, Localized.GuiRenderErrorTextFormat, this.pluginName), maxWidth, maxHeight, lockWidth, lockHeight);
+
+                    // Fix up the path for the current environment.
+                    string platformCompatibleRootPath = KSPUtil.ApplicationRootPath.Replace('/', Path.DirectorySeparatorChar);
+                    // Trim off the extra path components to get the actual KSP root path.
+                    string actualRootPath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(platformCompatibleRootPath)));
+                    string kspDataPath = Path.Combine(actualRootPath, "KSP_Data");
+                    string kspLogFile = Path.Combine(kspDataPath, "output_log.txt");
+
+                    GUIStyle textFieldStyle = new GUIStyle();
+                    textFieldStyle.wordWrap = true;
+                    textFieldStyle.normal.textColor = Color.white;
+
+                    GUILayout.TextField(kspLogFile, textFieldStyle, maxWidth, maxHeight, lockWidth, lockHeight);
+
+                    GUILayout.EndVertical();
                 }
             }
-
-            GUILayout.EndScrollView();
-            
-            #region Status Area
-
-            GUILayout.Space(3);
-
-            string status = default(string);
-
-            int partCount = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts.Count : 0;
-
-            if(!string.IsNullOrEmpty(GUI.tooltip))
+            catch(Exception e)
             {
-                status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTooltipTextFormat, partCount, GUI.tooltip);
+                this.renderError = true;
+
+                Debug.LogError("PartWizard :: Window rendering error, details follow:");
+                Debug.LogException(e);
+
+                throw;
             }
-            else
+            finally
             {
-                status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTextFormat, partCount);
+                // Make the window draggable.
+                GUI.DragWindow();
+
+                GUIControls.EndLayout();
             }
-
-            GUILayout.Label(status, this.tooltipLabelStyle);
-            
-            GUILayout.EndVertical();
-
-            #endregion
-
-            // Make the window draggable.
-            GUI.DragWindow(this.window);
-
-            GUIControls.EndLayout();
         }
     }
 }

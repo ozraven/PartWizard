@@ -97,6 +97,15 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error has occurred in {0}. If the error keeps occurring, please post a support request message in the AddOns forum thread for {0}. It will be very helpful to include as much information as possible, such as: steps to reproduce the problem, a .craft file, list of addons, and especially the log file at the following location on your computer:.
+        /// </summary>
+        internal static string GuiRenderErrorTextFormat {
+            get {
+                return ResourceManager.GetString("GuiRenderErrorTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} Part(s).
         /// </summary>
         internal static string StatusLabelTextFormat {

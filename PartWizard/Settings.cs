@@ -41,23 +41,23 @@ namespace PartWizard
                 throw new ArgumentException("Invalid key name.", "key");
         }
 
-        public static void SetValue(string key, float value)
-        {
-            Configuration.ValidateKeyName(key);
+        //public static void SetValue(string key, float value)
+        //{
+        //    Configuration.ValidateKeyName(key);
 
-            ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
+        //    ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
 
-            Configuration.SetValue(settingsNode, key, value);
-        }
+        //    Configuration.SetValue(settingsNode, key, value);
+        //}
 
-        public static void SetValue(string key, int value)
-        {
-            Configuration.ValidateKeyName(key);
+        //public static void SetValue(string key, int value)
+        //{
+        //    Configuration.ValidateKeyName(key);
 
-            ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
+        //    ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
 
-            Configuration.SetValue(settingsNode, key, value);
-        }
+        //    Configuration.SetValue(settingsNode, key, value);
+        //}
 
         private static void SetValue(ConfigNode node, string key, float value)
         {
@@ -110,32 +110,32 @@ namespace PartWizard
             return result;
         }
 
-        public static float GetValue(string key, float defaultValue)
-        {
-            return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
-        }
+        //public static float GetValue(string key, float defaultValue)
+        //{
+        //    return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
+        //}
 
-        private static int GetValue(ConfigNode node, string key, int defaultValue)
-        {
-            if(node == null)
-                throw new ArgumentNullException("node");
+        //private static int GetValue(ConfigNode node, string key, int defaultValue)
+        //{
+        //    if(node == null)
+        //        throw new ArgumentNullException("node");
 
-            // key is validated by public facing methods.
+        //    // key is validated by public facing methods.
 
-            int result = default(int);
+        //    int result = default(int);
 
-            if(!int.TryParse(node.GetValue(key), out result))
-            {
-                result = defaultValue;
-            }
+        //    if(!int.TryParse(node.GetValue(key), out result))
+        //    {
+        //        result = defaultValue;
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
-        public static int GetValue(string key, int defaultValue)
-        {
-            return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
-        }
+        //public static int GetValue(string key, int defaultValue)
+        //{
+        //    return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
+        //}
 
         public static Rect GetValue(string key, Rect defaultValue)
         {
@@ -149,10 +149,10 @@ namespace PartWizard
             {
                 ConfigNode rectNode = settingsNode.GetNode(key);
 
-                result.x = Configuration.GetValue(KeyRectX, defaultValue.x);
-                result.y = Configuration.GetValue(KeyRectY, defaultValue.y);
-                result.width = Configuration.GetValue(KeyRectWidth, defaultValue.width);
-                result.height = Configuration.GetValue(KeyRectHeight, defaultValue.height);
+                result.x = Configuration.GetValue(rectNode, KeyRectX, defaultValue.x);
+                result.y = Configuration.GetValue(rectNode, KeyRectY, defaultValue.y);
+                result.width = Configuration.GetValue(rectNode, KeyRectWidth, defaultValue.width);
+                result.height = Configuration.GetValue(rectNode, KeyRectHeight, defaultValue.height);
             }
 
             return result;
