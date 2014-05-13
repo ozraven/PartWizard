@@ -47,6 +47,19 @@ namespace PartWizard
 
         private Vector2 scrollPosition;
 
+        private enum ViewType
+        {
+            All = 0,
+            Hidden = 1
+        }
+
+        private ViewType viewType = ViewType.All;
+
+        private GUIStyle selectedViewTypeStyle;
+        private GUIStyle unselectedViewTypeStyle;
+
+        private GUIContent[] viewTypeContents;
+
         private bool renderError = false;
         
         public void Awake()
@@ -65,6 +78,14 @@ namespace PartWizard
                 this.partCountLabelStyle = new GUIStyle();
                 this.partCountLabelStyle.normal.textColor = PartCountLabelColor;
                 this.partCountLabelStyle.alignment = TextAnchor.LowerRight;
+
+                this.selectedViewTypeStyle = new GUIStyle("button");
+                this.selectedViewTypeStyle.onNormal.textColor = Color.green;
+                this.selectedViewTypeStyle.onHover.textColor = Color.green;
+
+                this.unselectedViewTypeStyle = new GUIStyle("button");
+
+                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
 
                 // Always start hidden to stay out of the way.
                 this.visible = false;
@@ -172,6 +193,17 @@ namespace PartWizard
 
                     GUILayout.BeginVertical();
 
+                    GUILayout.BeginHorizontal();
+
+                    this.viewType = (ViewType)GUIControls.HorizontalToggleSet((int)this.viewType, this.viewTypeContents, this.selectedViewTypeStyle, this.unselectedViewTypeStyle);
+
+                    GUILayout.EndHorizontal();
+
+                    if(this.viewType == ViewType.Hidden)
+                    {
+                        parts = parts.FindAll((p) => { return p.partInfo.category == PartCategories.none; });
+                    }
+
                     this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
                     foreach(Part part in parts)
@@ -221,9 +253,9 @@ namespace PartWizard
 
                         bool deleted = false;                   // Will be set to true if the delete button was pressed.
 
-                        // Only enable the delete button if there are no parts selected, there is more than just the root part, and the part has no children because we can't pluck
-                        // parts from between other parts.
-                        GUI.enabled = !EditorLogic.SelectedPart && parts.Count > 1 && (part.children.Count == 0);
+                        // Only enable the delete button if there are no parts selected, the part is not the root part, and the part has no children (because we can't pluck
+                        // parts from between other parts).
+                        GUI.enabled = !EditorLogic.SelectedPart && part.parent != null && (part.children.Count == 0);
 
                         string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
 
@@ -279,15 +311,13 @@ namespace PartWizard
 
                     string status = default(string);
 
-                    int partCount = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts.Count : 0;
-
                     if(!string.IsNullOrEmpty(GUI.tooltip))
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTooltipTextFormat, partCount, GUI.tooltip);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTooltipTextFormat, parts.Count, GUI.tooltip);
                     }
                     else
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTextFormat, partCount);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTextFormat, parts.Count);
                     }
 
                     GUILayout.Label(status, this.tooltipLabelStyle);

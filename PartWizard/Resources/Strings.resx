@@ -141,4 +141,10 @@
     <value>{0} Part(s), {1}</value>
     <comment>Displayed at the bottom of PartWizardWindow, {0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
   </data>
+  <data name="ViewTypeAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ViewTypeHidden" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
 </root>

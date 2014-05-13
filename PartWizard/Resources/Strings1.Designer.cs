@@ -122,5 +122,23 @@ namespace PartWizard.Resources {
                 return ResourceManager.GetString("StatusLabelTooltipTextFormat", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        internal static string ViewTypeAll {
+            get {
+                return ResourceManager.GetString("ViewTypeAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        internal static string ViewTypeHidden {
+            get {
+                return ResourceManager.GetString("ViewTypeHidden", resourceCulture);
+            }
+        }
     }
 }
