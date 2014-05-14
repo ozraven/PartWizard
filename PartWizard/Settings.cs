@@ -41,24 +41,6 @@ namespace PartWizard
                 throw new ArgumentException("Invalid key name.", "key");
         }
 
-        //public static void SetValue(string key, float value)
-        //{
-        //    Configuration.ValidateKeyName(key);
-
-        //    ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
-
-        //    Configuration.SetValue(settingsNode, key, value);
-        //}
-
-        //public static void SetValue(string key, int value)
-        //{
-        //    Configuration.ValidateKeyName(key);
-
-        //    ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
-
-        //    Configuration.SetValue(settingsNode, key, value);
-        //}
-
         private static void SetValue(ConfigNode node, string key, float value)
         {
             if(node == null)
@@ -109,33 +91,6 @@ namespace PartWizard
 
             return result;
         }
-
-        //public static float GetValue(string key, float defaultValue)
-        //{
-        //    return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
-        //}
-
-        //private static int GetValue(ConfigNode node, string key, int defaultValue)
-        //{
-        //    if(node == null)
-        //        throw new ArgumentNullException("node");
-
-        //    // key is validated by public facing methods.
-
-        //    int result = default(int);
-
-        //    if(!int.TryParse(node.GetValue(key), out result))
-        //    {
-        //        result = defaultValue;
-        //    }
-
-        //    return result;
-        //}
-
-        //public static int GetValue(string key, int defaultValue)
-        //{
-        //    return Configuration.GetValue(Configuration.Root.GetNode(Configuration.SettingsNodeName), key, defaultValue);
-        //}
 
         public static Rect GetValue(string key, Rect defaultValue)
         {

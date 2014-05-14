@@ -28,13 +28,14 @@ namespace PartWizard
             GUIControls.layoutStarted = false;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "selectedIndex")]
         public static int HorizontalToggleSet(int selectedIndex, GUIContent[] contents, GUIStyle selectedStyle, GUIStyle unselectedStyle, params GUILayoutOption[] options)
         {
             if(contents == null)
                 throw new ArgumentNullException("contents");
 
             if(selectedIndex < 0 || selectedIndex > contents.Length - 1)
-                throw new IndexOutOfRangeException("The selectedIndex must be within the range of the contents array.");
+                throw new GUIControlsException("The selectedIndex must be within the range of the contents array.");
 
             int result = selectedIndex;
 
@@ -54,8 +55,6 @@ namespace PartWizard
                 }
                 else
                 {
-                    Debug.Log(string.Format("{0}", (index == selectedIndex) ? "SELECTED " + contents[index].text : "NOT " + contents[index].text));
-
                     activeStyle = (index == selectedIndex) ? selectedStyle : unselectedStyle;
                 }
 

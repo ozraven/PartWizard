@@ -61,6 +61,15 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} breakable.
+        /// </summary>
+        internal static string Breakable {
+            get {
+                return ResourceManager.GetString("Breakable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to B.
         /// </summary>
         internal static string BreakSymmetryButtonText {
@@ -102,6 +111,60 @@ namespace PartWizard.Resources {
         internal static string GuiRenderErrorTextFormat {
             get {
                 return ResourceManager.GetString("GuiRenderErrorTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, child {1} is not breakable.
+        /// </summary>
+        internal static string NotBreakableChildNotBreakable {
+            get {
+                return ResourceManager.GetString("NotBreakableChildNotBreakable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, counterpart {1} has no parent.
+        /// </summary>
+        internal static string NotBreakableCounterpartHasNoParent {
+            get {
+                return ResourceManager.GetString("NotBreakableCounterpartHasNoParent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, has an ancestral counterpart.
+        /// </summary>
+        internal static string NotBreakableHasAncestralCounterpart {
+            get {
+                return ResourceManager.GetString("NotBreakableHasAncestralCounterpart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, has descendant counterpart.
+        /// </summary>
+        internal static string NotBreakableHasDescendantCounterpart {
+            get {
+                return ResourceManager.GetString("NotBreakableHasDescendantCounterpart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, has no parent.
+        /// </summary>
+        internal static string NotBreakableNoParent {
+            get {
+                return ResourceManager.GetString("NotBreakableNoParent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} not breakable, not symmetrical.
+        /// </summary>
+        internal static string NotBreakableNotSymmetrical {
+            get {
+                return ResourceManager.GetString("NotBreakableNotSymmetrical", resourceCulture);
             }
         }
         

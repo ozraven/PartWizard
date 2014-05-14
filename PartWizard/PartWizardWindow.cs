@@ -10,6 +10,8 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
+    // TODO: Move the MonoBehaviour elements to a dedicated PartWizardPlugin class.
+    // TODO: Add support for a configurable hotkey to show/hide the PartWizard UI.
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
     [CLSCompliant(false)]
     public class PartWizardWindow : MonoBehaviour
@@ -41,6 +43,8 @@ namespace PartWizard
 
         private GUIStyle tooltipLabelStyle;
         private GUIStyle partCountLabelStyle;
+
+        private GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
 
         private volatile bool controllingPartHighlight = false;
         private uint highlightedPartId = 0;
@@ -87,19 +91,24 @@ namespace PartWizard
 
                 this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
 
-                // Always start hidden to stay out of the way.
-                this.visible = false;
-                
                 if(ToolbarManager.ToolbarAvailable)
                 {
                     this.partWizardToolbarButton = ToolbarManager.Instance.add("PartWizardNS", "partWizardButton");
                     this.partWizardToolbarButton.ToolTip = this.pluginName;
                     this.partWizardToolbarButton.OnClick += partWizardButton_Click;
                     this.partWizardToolbarButton.Visibility = new GameScenesVisibility(GameScenes.EDITOR, GameScenes.SPH);
-
-                    this.UpdateToolbarIcon();
                 }
+
+                // Always start hidden to stay out of the way.
+                this.Hide();
             }
+        }
+
+        private void Hide()
+        {
+            this.visible = false;
+
+            this.UpdateToolbarIcon();
         }
         
         // TODO: Move this elsewhere. The button exists when this window does not and this window doesn't care how it comes in to being.
@@ -131,6 +140,7 @@ namespace PartWizard
 
         private void UpdateToolbarIcon()
         {
+            // TODO: Magic strings.
             if(this.visible && ToolbarManager.ToolbarAvailable)
             {
                 this.partWizardToolbarButton.TexturePath = "PartWizard/Icons/partwizard_active_toolbar_24_icon";
@@ -158,6 +168,7 @@ namespace PartWizard
         {
             if(this.window == null)
             {
+                // TODO: Centralize logging.
                 Debug.Log("PartWizard :: OnDestroy, this.window is null.");
             }
             else
@@ -181,10 +192,7 @@ namespace PartWizard
             {
                 if(GUIControls.TitleBarButton(this.window))
                 {
-                    // TODO: Duplicate code. Move to a method and call it.
-                    this.visible = false;
-
-                    this.UpdateToolbarIcon();
+                    this.Hide();
                 }
 
                 if(!renderError)
@@ -192,6 +200,8 @@ namespace PartWizard
                     List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
 
                     GUILayout.BeginVertical();
+
+                    #region Display Mode Control
 
                     GUILayout.BeginHorizontal();
 
@@ -203,6 +213,8 @@ namespace PartWizard
                     {
                         parts = parts.FindAll((p) => { return p.partInfo.category == PartCategories.none; });
                     }
+
+                    #endregion
 
                     this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
@@ -231,12 +243,12 @@ namespace PartWizard
 
                         bool breakSymmetryMouseOver = false;
 
-                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.IsSymmetricalRoot(part);
+                        string breakabilityReport = default(string);
+                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
 
                         string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
 
-                        // TODO: Magic numbers.
-                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, GUILayout.Width(22)))
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, PartActionButtonWidth))
                         {
                             PartWizard.BreakSymmetry(part);
 
@@ -253,14 +265,11 @@ namespace PartWizard
 
                         bool deleted = false;                   // Will be set to true if the delete button was pressed.
 
-                        // Only enable the delete button if there are no parts selected, the part is not the root part, and the part has no children (because we can't pluck
-                        // parts from between other parts).
-                        GUI.enabled = !EditorLogic.SelectedPart && part.parent != null && (part.children.Count == 0);
+                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.IsDeleteable(part);
 
                         string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
 
-                        // TODO: Magic numbers.
-                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, GUILayout.Width(22)))
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, PartActionButtonWidth))
                         {
                             Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] deleting part {0}", part.name));
 
@@ -328,6 +337,8 @@ namespace PartWizard
                 }
                 else
                 {
+                    #region Error Mode GUI
+
                     GUILayout.BeginVertical();
 
                     GUILayoutOption maxWidth = GUILayout.MaxWidth(this.window.width);
@@ -351,6 +362,8 @@ namespace PartWizard
                     GUILayout.TextField(kspLogFile, textFieldStyle, maxWidth, maxHeight, lockWidth, lockHeight);
 
                     GUILayout.EndVertical();
+
+                    #endregion
                 }
             }
             catch(Exception e)
@@ -364,7 +377,6 @@ namespace PartWizard
             }
             finally
             {
-                // Make the window draggable.
                 GUI.DragWindow();
 
                 GUIControls.EndLayout();
