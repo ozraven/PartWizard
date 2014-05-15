@@ -21,7 +21,7 @@ Version 1.0.0.0
 
 [1] Parts eligible for deleting via Part Wizard are those that are not the "root" part and have no attached parts.
 [2] Symmetry is broken on the designated part, its counter parts and all symmetrical child parts.
-[3] Parts eligible for "breaking" of symmetry must not include the "root" part, and require 
+[3] Parts eligible for "breaking" of symmetry must not include the "root" part as a counterpart or as a child part. 
 
 2. Requirements
 
