@@ -31,7 +31,7 @@ using System.Text;
 using UnityEngine;
 
 
-// TODO: Change to your plugin's namespace here.
+// TODX: Change to your plugin's namespace here.
 namespace PartWizard
 {
 

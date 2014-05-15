@@ -7,8 +7,6 @@ namespace PartWizard
 {
     internal static class Configuration
     {
-        // TODO: Refactor this to avoid static classes and wonky path manipulation.
-
         // Example partwizard.cfg:
         // PART_WIZARD_SETTINGS
         // {
@@ -19,11 +17,10 @@ namespace PartWizard
         //         width = 250
         //         height = 400
         //     }
-        //     PART_WIZARD_TOOLBAR_ICONS
-        //     {
-        //         active = PartWizard/Icons/partwizard_active_toolbar_24_icon
-        //         inactive = PartWizard/Icons/partwizard_inactive_toolbar_24_icon
-        //     }
+        //
+        //     toolbarIconActive = PartWizard/Icons/partwizard_active_toolbar_24_icon
+        //     toolbarIconInactive = PartWizard/Icons/partwizard_inactive_toolbar_24_icon
+        //
         //     toggleHotkey = Alt-P,W
         // }
 
@@ -34,8 +31,8 @@ namespace PartWizard
         private const string KeyRectWidth = "width";
         private const string KeyRectHeight = "height";
 
-        private static string Path = System.IO.Path.Combine(KSPUtil.ApplicationRootPath, File);
-        private static ConfigNode Root = ConfigNode.Load(Configuration.Path) ?? new ConfigNode();
+        private static readonly string Path = System.IO.Path.Combine(KSPUtil.ApplicationRootPath, File);
+        private static readonly ConfigNode Root = ConfigNode.Load(Configuration.Path) ?? new ConfigNode();
        
         static Configuration()
         {
@@ -93,6 +90,20 @@ namespace PartWizard
             Configuration.SetValue(rectNode, KeyRectHeight, value.height);
         }
 
+        public static void SetValue(string key, string value)
+        {
+            Configuration.ValidateKeyName(key);
+
+            ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
+
+            if(settingsNode.HasValue(key))
+            {
+                settingsNode.RemoveValue(key);
+            }
+
+            settingsNode.AddValue(key, value);
+        }
+
         private static float GetValue(ConfigNode node, string key, float defaultValue)
         {
             if(node == null)
@@ -103,6 +114,23 @@ namespace PartWizard
             float result = default(float);
 
             if(!float.TryParse(node.GetValue(key), out result))
+            {
+                result = defaultValue;
+            }
+
+            return result;
+        }
+
+        private static string GetValue(ConfigNode node, string key, string defaultValue)
+        {
+            if(node == null)
+                throw new ArgumentNullException("node");
+
+            // key is validated by public facing methods.
+
+            string result = node.GetValue(key);
+
+            if(string.IsNullOrEmpty(result))
             {
                 result = defaultValue;
             }
@@ -130,5 +158,21 @@ namespace PartWizard
 
             return result;
         }
+
+        public static string GetValue(string key, string defaultValue)
+        {
+            Configuration.ValidateKeyName(key);
+
+            string result = defaultValue;
+
+            ConfigNode settingsNode = Configuration.Root.GetNode(key);
+
+            if(settingsNode != null)
+            {
+                result = Configuration.GetValue(settingsNode, key, defaultValue);
+            }
+
+            return result;
+        }        
     }
 }

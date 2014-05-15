@@ -9,6 +9,8 @@ namespace PartWizard
         private static int titleBarButtonCount = 0;
         private static bool layoutStarted = false;
 
+        //private const 
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndLayout")]
         public static void BeginLayout()
         {
@@ -82,13 +84,18 @@ namespace PartWizard
             if(!GUIControls.layoutStarted)
                 throw new GUIControlsException("GUI layout must be started before adding title bar buttons, call BeginLayout first.");
 
+            const float TitleBarIconSpacing = 20;
+            const float TitleBarIconPadding = 2;
+            const float TitleBarIconY = 3;
+            const float TitleBarIconWidth = 12;
+            const float TitleBarIconHeight = 12;
+
             bool result = false;
 
             GUIControls.titleBarButtonCount++;
 
-            // TODO: Magic numbers.
-            float x = window.width - ((20 * GUIControls.titleBarButtonCount) + 2);
-            result = GUI.Button(new Rect(x, 3, 12, 12), default(string));
+            float x = window.width - ((TitleBarIconSpacing * GUIControls.titleBarButtonCount) + TitleBarIconPadding);
+            result = GUI.Button(new Rect(x, TitleBarIconY, TitleBarIconWidth, TitleBarIconHeight), default(string));
 
             return result;
         }
