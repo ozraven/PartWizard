@@ -9,6 +9,24 @@ namespace PartWizard
     {
         // TODO: Refactor this to avoid static classes and wonky path manipulation.
 
+        // Example partwizard.cfg:
+        // PART_WIZARD_SETTINGS
+        // {
+        //     PART_WIZARD_WINDOW
+        //     {
+        //         x = 25
+        //         y = 25
+        //         width = 250
+        //         height = 400
+        //     }
+        //     PART_WIZARD_TOOLBAR_ICONS
+        //     {
+        //         active = PartWizard/Icons/partwizard_active_toolbar_24_icon
+        //         inactive = PartWizard/Icons/partwizard_inactive_toolbar_24_icon
+        //     }
+        //     toggleHotkey = Alt-P,W
+        // }
+
         private const string File = "GameData/PartWizard/partwizard.cfg";
         private const string SettingsNodeName = "PART_WIZARD_SETTINGS";
         private const string KeyRectX = "x";

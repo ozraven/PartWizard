@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 
 using UnityEngine;
+
+using KSP.IO;
 
 using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-    // TODO: Move the MonoBehaviour elements to a dedicated PartWizardPlugin class.
-    // TODO: Add support for a configurable hotkey to show/hide the PartWizard UI.
-    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
-    [CLSCompliant(false)]
-    public class PartWizardWindow : MonoBehaviour
+    public class PartWizardWindow
     {
         private const float DefaultX = 300;
         private const float DefaultY = 200;
@@ -33,8 +30,6 @@ namespace PartWizard
 
         private bool visible;
         
-        private IButton partWizardToolbarButton;
-
         private int partWizardWindowId;
 
         // Early instantiation of this so that when we save the configuration we don't end up with all zeros. (Rect is a struct, so the default constructor is used as structs
@@ -65,125 +60,72 @@ namespace PartWizard
         private GUIContent[] viewTypeContents;
 
         private bool renderError = false;
-        
-        public void Awake()
+
+        public bool Visible
         {
-            if(HighLogic.LoadedSceneIsEditor)
+            get
             {
-                Assembly executingAssembly = Assembly.GetExecutingAssembly();
-                this.pluginName = System.Diagnostics.FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductName;
-                string version = System.Diagnostics.FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion;
-
-                this.windowTitle = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", this.pluginName, version);
-
-                this.tooltipLabelStyle = new GUIStyle();
-                this.tooltipLabelStyle.normal.textColor = TooltipLabelColor;
-
-                this.partCountLabelStyle = new GUIStyle();
-                this.partCountLabelStyle.normal.textColor = PartCountLabelColor;
-                this.partCountLabelStyle.alignment = TextAnchor.LowerRight;
-
-                this.selectedViewTypeStyle = new GUIStyle("button");
-                this.selectedViewTypeStyle.onNormal.textColor = Color.green;
-                this.selectedViewTypeStyle.onHover.textColor = Color.green;
-
-                this.unselectedViewTypeStyle = new GUIStyle("button");
-
-                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
-
-                if(ToolbarManager.ToolbarAvailable)
-                {
-                    this.partWizardToolbarButton = ToolbarManager.Instance.add("PartWizardNS", "partWizardButton");
-                    this.partWizardToolbarButton.ToolTip = this.pluginName;
-                    this.partWizardToolbarButton.OnClick += partWizardButton_Click;
-                    this.partWizardToolbarButton.Visibility = new GameScenesVisibility(GameScenes.EDITOR, GameScenes.SPH);
-                }
-
-                // Always start hidden to stay out of the way.
-                this.Hide();
+                return this.visible;
             }
         }
+        
+        public PartWizardWindow(string name, string version)
+        {
+            this.pluginName = name;
+            this.windowTitle = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", name, version);
 
-        private void Hide()
+            this.tooltipLabelStyle = new GUIStyle();
+            this.tooltipLabelStyle.normal.textColor = TooltipLabelColor;
+
+            this.partCountLabelStyle = new GUIStyle();
+            this.partCountLabelStyle.normal.textColor = PartCountLabelColor;
+            this.partCountLabelStyle.alignment = TextAnchor.LowerRight;
+
+            this.selectedViewTypeStyle = new GUIStyle("button");
+            this.selectedViewTypeStyle.onNormal.textColor = Color.green;
+            this.selectedViewTypeStyle.onHover.textColor = Color.green;
+
+            this.unselectedViewTypeStyle = new GUIStyle("button");
+
+            this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
+        }
+
+        public void Show(int windowId)
+        {
+            this.partWizardWindowId = windowId;
+
+            this.window = Configuration.GetValue(PartWizardWindow.WindowPositionConfigurationName, new Rect(PartWizardWindow.DefaultX, PartWizardWindow.DefaultY, PartWizardWindow.DefaultWidth, PartWizardWindow.DefaultHeight));
+
+            this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - MaximumWidth);
+            this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - MaximumHeight);
+
+            this.visible = true;
+        }
+
+        public void Hide()
         {
             this.visible = false;
 
-            this.UpdateToolbarIcon();
-        }
-        
-        // TODO: Move this elsewhere. The button exists when this window does not and this window doesn't care how it comes in to being.
-        private void partWizardButton_Click(ClickEvent e)
-        {
-            this.visible = !this.visible;
-
-            if(this.visible)
+            if(!this.renderError)
             {
-                this.partWizardWindowId = gameObject.GetInstanceID();
+                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
 
-                this.window = Configuration.GetValue(PartWizardWindow.WindowPositionConfigurationName, new Rect(PartWizardWindow.DefaultX, PartWizardWindow.DefaultY, PartWizardWindow.DefaultWidth, PartWizardWindow.DefaultHeight));
-
-                this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - MaximumWidth);
-                this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - MaximumHeight);
-            }
-            else
-            {
-                if(!this.renderError)
-                {
-                    Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
-
-                    Configuration.Save();
-                }
-            }
-
-            this.UpdateToolbarIcon();
-        }
-
-        private void UpdateToolbarIcon()
-        {
-            // TODO: Magic strings.
-            if(this.visible && ToolbarManager.ToolbarAvailable)
-            {
-                this.partWizardToolbarButton.TexturePath = "PartWizard/Icons/partwizard_active_toolbar_24_icon";
-            }
-            else
-            {
-                this.partWizardToolbarButton.TexturePath = "PartWizard/Icons/partwizard_inactive_toolbar_24_icon";
+                Configuration.Save();
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "GUI")]
-        public void OnGUI()
+        public void Render()
         {
             if(this.visible && (HighLogic.LoadedScene == GameScenes.EDITOR || HighLogic.LoadedScene == GameScenes.SPH))
             {
                 GUI.skin.window.clipping = TextClipping.Clip;
                 if(Event.current.type == EventType.Layout)
                 {
-                    this.window = GUILayout.Window(this.partWizardWindowId, this.window, OnRender, this.windowTitle);    
+                    this.window = GUILayout.Window(this.partWizardWindowId, this.window, OnRender, this.windowTitle);
                 }
             }
         }
-
-        public void OnDestroy()
-        {
-            if(this.window == null)
-            {
-                // TODO: Centralize logging.
-                Debug.Log("PartWizard :: OnDestroy, this.window is null.");
-            }
-            else
-            {
-                if(!this.renderError)
-                {
-                    Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
-
-                    Configuration.Save();
-                }
-            }
-
-            this.partWizardToolbarButton.Destroy(); this.partWizardToolbarButton = null;
-        }
-
+        
         private void OnRender(int windowId)
         {
             GUIControls.BeginLayout();
@@ -230,7 +172,7 @@ namespace PartWizard
 
                         // We want to draw the part's name first, but it won't exist when the time comes to render it if the user chooses to delete it. DisplayName() must be
                         // careful to make sure the part still exists.
-                        GUIControls.MouseOverLabel(new GUIContent(part.DisplayName(), part.partInfo.name), out labelMouseOver);
+                        GUIControls.MouseOverLabel(new GUIContent(part.partInfo.title, part.partInfo.name), out labelMouseOver);
 
                         mouseOver |= labelMouseOver;
 

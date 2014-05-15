@@ -1,3 +1,5 @@
 *.suo
 /PartWizard/*.user
 Debug
+/PartWizard/bin/Release
+/PartWizard/obj/Release
