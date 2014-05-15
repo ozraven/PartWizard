@@ -17,9 +17,7 @@ namespace PartWizard
         private const float DefaultY = 200;
         private const float DefaultWidth = 250;
         private const float DefaultHeight = 400;
-        private const float MaximumWidth = 600;    // TODO: Review what this does.
-        private const float MaximumHeight = 500;   // TODO: Review what this does.
-
+        
         private readonly Color TooltipLabelColor = Color.yellow;
         private readonly Color PartCountLabelColor = Color.white;
 
@@ -96,8 +94,8 @@ namespace PartWizard
 
             this.window = Configuration.GetValue(PartWizardWindow.WindowPositionConfigurationName, new Rect(PartWizardWindow.DefaultX, PartWizardWindow.DefaultY, PartWizardWindow.DefaultWidth, PartWizardWindow.DefaultHeight));
 
-            this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - MaximumWidth);
-            this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - MaximumHeight);
+            this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - this.window.width);
+            this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - this.window.height);
 
             this.visible = true;
         }
