@@ -1,0 +1,87 @@
+﻿Part Wizard Plugin for Kerbal Space Program
+
+1. Features
+2. Requirements
+3. Installation
+4. Usage
+   a. Part List Overview
+   b. View Mode
+   c. Deleting Parts
+   d. Breaking Symmetry
+   e. Undoing an Operation
+5. Copyright and Licensing Information
+
+1. Features
+
+* Provides a list of parts with part highlighting for easier identification.
+* Allows deleting of parts from the list on eligible[1] parts.
+* Allows "breaking" of symmetry[2] on eligible[3] parts.
+* Shows either all parts or only those that are hidden from the editor's Parts List.
+
+[1] Parts eligible for deleting via Part Wizard are those that are not the "root" part and have no attached parts.
+[2] Symmetry is broken on the designated part, its counter parts and all symmetrical child parts.
+[3] Parts eligible for "breaking" of symmetry must not include the "root" part, and require 
+
+2. Requirements
+
+blizzy78's Toolbar plugin is required in order to show the Part Wizard interface. The plugin is NOT included with Part Wizard and must be downloaded separately: http://blizzy.de/toolbar/download.html See the official Kerbal Space Program forum thread for more information: http://forum.kerbalspaceprogram.com/threads/60863-0-23-5-Toolbar-1-7-1-Common-API-for-draggable-resizable-buttons-toolbar
+
+3. Installation
+
+    1. Place the PartWizard folder in to your Kerbal Space Program installation under the GameData folder.
+	
+4. Usage
+
+The Part Wizard toolbar icon is only available in the Vehicle Assembly Building (VAB) or Space Plane Hangar (SPH) editors. The first time you start Kerbal Space Program with the Part Wizard plugin installed, you will need to configure your toolbar to display the Part Wizard icon. Once configured, clicking the Part Wizard toolbar icon will show Part Wizard, and clicking the toolbar icon again will hide it.
+
+    a. Part List Overview
+
+	The Part Wizard interface presents a list of parts that currently make up your vehicle. Mousing over each part on the list will highlight the part within the editor. At the bottom of the window is a status area that always shows the current total part count and, when mousing over a part, will show that part's internal name.
+
+	b. View Mode
+
+	There are two buttons at the top of the interface, "All" and "Hidden". These buttons control the current viewing mode, which is indicated by depressed button with green text. "All" mode shows all of the current parts in the list. "Hidden" mode shows only those parts that have been hidden from the Parts List, as designated by the either the part's configuration (.cfg) file or as modified by the Module Manager [1] plugin (or similar). Hidden mode is intended to allow the easy locating of parts that may have been made obsolete by the author.
+
+	c. Deleting Parts
+
+	Each active part in the Part Wizard list has a small button (labelled with a "X"). When this button is enabled, a part may be deleted by clicking the associated "X" button. The part will be removed immediately. If the part intended for deletion is symmetrical with other parts, ALL of its counterparts will also be deleted. (If this is not intended, see Breaking Symmetry, below.)
+
+	d. Breaking Symmetry
+
+	Each active part in the Part Wizard list has a small button (labelled with a "B"). When this button is enabled, a part's symmetry may be broken by clicking the associated "B" button. The part, all of its counterparts, and all symmetrical child parts will be converted to non-symmetrical parts and can then be manipulated as individual parts. When the Break Symmetry feature is not available for a part, it is likely that the part or one of its related parts has been made the "root" part in some way. Note that non-symmetrical child parts are ignored by the Break Symmetry feature and will not be modified.
+
+	e. Undoing an Operation
+
+	Part Wizard utilizes the editor to enable its features and as such, its operations are undoable as normal. However, it may require more than one "undo" action to completely revert the actions due to the operations Part Wizard performs, especially when breaking symmetry.
+
+	[1] Module Manager is a plugin for patching parts at load time, maintained by sarbian: http://forum.kerbalspaceprogram.com/threads/55219-Module-Manager-2-1-0-%28May-04%29-please-read-the-orange-text-in-first-post
+
+5. Copyright and Licensing Information
+
+Part Wizard contains portions of "Toolbar" licensed under the terms of the "Simplified BSD License" and is copyright (c) Maik Schreiber. (http://opensource.org/licenses/BSD-2-Clause)
+Part Wizard is licensed, as follows, under the terms of the "Modified BSD License": http://opensource.org/licenses/BSD-3-Clause
+
+Copyright (c) 2014, Eric Harris (ozraven)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the copyright holder nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL ERIC HARRIS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
