@@ -34,8 +34,6 @@ namespace PartWizard
         private static int titleBarButtonCount = 0;
         private static bool layoutStarted = false;
 
-        //private const 
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndLayout")]
         public static void BeginLayout()
         {
@@ -146,6 +144,57 @@ namespace PartWizard
             return result;
         }
 
+        //public static Vector2 BeginMouseOverScrollView(Vector2 scrollPosition, bool alwaysShowHorizontal, bool alwaysShowVertical, params GUILayout[] options)
+        //{
+        //    return GUILayout.BeginScrollView(scrollPosition, alwaysShowHorizontal, alwaysShowVertical, options);
+        //}
+
+        //public static void EndMouseOverScrollView(out bool mouseOver)
+        //{
+        //    mouseOver = false;
+
+        //    GUILayout.EndScrollView();
+
+        //    if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+        //    {
+        //        mouseOver = true;
+        //    }
+        //}
+
+        public static void BeginMouseOverHorizontal(params GUILayoutOption[] options)
+        {
+            GUILayout.BeginHorizontal(options);
+        }
+
+        public static void EndMouseOverHorizontal(out bool mouseOver)
+        {
+            mouseOver = false;
+
+            GUILayout.EndHorizontal();
+
+            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+            {
+                mouseOver = true;
+            }
+        }
+
+        public static void BeginMouseOverVertical(params GUILayoutOption[] options)
+        {
+            GUILayout.BeginVertical(options);
+        }
+
+        public static void EndMouseOverVertical(out bool mouseOver)
+        {
+            mouseOver = false;
+
+            GUILayout.EndVertical();
+
+            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+            {
+                mouseOver = true;
+            }
+        }
+
         /// <summary>
         /// Provides a GUILayout label control that can detect if the mouse is within its area.
         /// </summary>
@@ -162,6 +211,24 @@ namespace PartWizard
             {
                 mouseOver = true;
             }
+        }
+
+        public static bool MouseOverWindow(ref Rect window)
+        {
+            bool result = false;
+
+            //if(Event.current.type == EventType.Repaint && Event.current.mousePosition.x >= 0 && Event.current.mousePosition.x < window.width &&
+            //    Event.current.mousePosition.y >= 0 && Event.current.mousePosition.y < window.height)
+            //{
+            //    result = true;
+            //}
+            if(Event.current.type == EventType.Repaint && Event.current.mousePosition.x >= window.x && Event.current.mousePosition.x < window.x + window.width &&
+                Event.current.mousePosition.y >= window.y && Event.current.mousePosition.y < window.y + window.height)
+            {
+                result = true;
+            }
+
+            return result;
         }
     }
 }

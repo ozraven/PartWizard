@@ -175,4 +175,8 @@
   <data name="ViewTypeHidden" xml:space="preserve">
     <value>Hidden</value>
   </data>
+  <data name="SymmetryEditor" xml:space="preserve">
+    <value>Symmetry Editor - {0} ({1})</value>
+    <comment>{0} = part display name, {1} = part name</comment>
+  </data>
 </root>

@@ -21,7 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -50,6 +50,24 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Test\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Test\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\KSPSDK\0.23.5\Assembly-CSharp.dll</HintPath>
@@ -64,6 +82,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GUIControls.cs" />
+    <Compile Include="Highlighter.cs" />
+    <Compile Include="HighlightTracker.cs" />
+    <Compile Include="HighlightTrackerException.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="PartGroup.cs" />
     <Compile Include="Properties\GlobalSuppressions.cs" />
     <Compile Include="GUIControlsException.cs" />
     <Compile Include="PartWizard.cs" />
@@ -76,7 +99,14 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Configuration.cs" />
+    <Compile Include="SymmetryEditorWindow.cs" />
+    <Compile Include="Test\MockEditorLogic.cs" />
+    <Compile Include="Test\MockIncompleteException.cs" />
+    <Compile Include="Test\MockPart.cs" />
+    <Compile Include="Test\MockShipConstruct.cs" />
+    <Compile Include="Test\MockStaging.cs" />
     <Compile Include="ToolbarWrapper.cs" />
+    <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Strings.resx">

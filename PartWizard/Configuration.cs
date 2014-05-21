@@ -58,7 +58,9 @@ namespace PartWizard
 
         private static readonly string Path = System.IO.Path.Combine(KSPUtil.ApplicationRootPath, File);
         private static readonly ConfigNode Root = ConfigNode.Load(Configuration.Path) ?? new ConfigNode();
-       
+
+        public static readonly GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
+
         static Configuration()
         {
             if(Configuration.Root.GetNode(Configuration.SettingsNodeName) == null)

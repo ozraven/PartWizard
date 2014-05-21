@@ -101,7 +101,7 @@ namespace PartWizard
             }
             else
             {
-                this.partWizardWindow.Show(gameObject.GetInstanceID());
+                this.partWizardWindow.Show();
             }
 
             this.UpdateToolbarIcon();

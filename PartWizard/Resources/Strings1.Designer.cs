@@ -187,6 +187,15 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Symmetry Editor - {0} ({1}).
+        /// </summary>
+        internal static string SymmetryEditor {
+            get {
+                return ResourceManager.GetString("SymmetryEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         internal static string ViewTypeAll {

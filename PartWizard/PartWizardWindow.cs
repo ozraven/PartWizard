@@ -36,7 +36,13 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-    public class PartWizardWindow
+#if TEST
+    using Part = global::PartWizard.Test.MockPart;
+    using EditorLogic = global::PartWizard.Test.MockEditorLogic;
+    using ShipConstruct = global::PartWizard.Test.MockShipConstruct;
+#endif
+
+    internal sealed class PartWizardWindow : Window
     {
         private const float DefaultX = 300;
         private const float DefaultY = 200;
@@ -51,21 +57,11 @@ namespace PartWizard
         private string pluginName;
         private string windowTitle;
 
-        private bool visible;
-        
-        private int partWizardWindowId;
-
-        // Early instantiation of this so that when we save the configuration we don't end up with all zeros. (Rect is a struct, so the default constructor is used as structs
-        // are non-nullable entities.)
-        private Rect window = new Rect(DefaultX, DefaultY, DefaultWidth, DefaultHeight);
-
         private GUIStyle tooltipLabelStyle;
         private GUIStyle partCountLabelStyle;
 
-        private GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
-
         private volatile bool controllingPartHighlight = false;
-        private uint highlightedPartId = 0;
+        private Part highlightedPart = null;
 
         private Vector2 scrollPosition;
 
@@ -84,15 +80,10 @@ namespace PartWizard
 
         private bool renderError = false;
 
-        public bool Visible
-        {
-            get
-            {
-                return this.visible;
-            }
-        }
-        
+        private SymmetryEditorWindow symmetryEditorWindow;
+
         public PartWizardWindow(string name, string version)
+            : base(Scene.Editor, new Rect(DefaultX, DefaultY, DefaultWidth, DefaultHeight), new Rect(DefaultX + DefaultWidth, DefaultY, DefaultWidth, DefaultHeight), name, WindowPositionConfigurationName)
         {
             this.pluginName = name;
             this.windowTitle = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", name, version);
@@ -111,55 +102,44 @@ namespace PartWizard
             this.unselectedViewTypeStyle = new GUIStyle("button");
 
             this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
+
+            this.symmetryEditorWindow = new SymmetryEditorWindow();
         }
 
-        public void Show(int windowId)
-        {
-            this.partWizardWindowId = windowId;
-
-            this.window = Configuration.GetValue(PartWizardWindow.WindowPositionConfigurationName, new Rect(PartWizardWindow.DefaultX, PartWizardWindow.DefaultY, PartWizardWindow.DefaultWidth, PartWizardWindow.DefaultHeight));
-
-            this.window.x = Mathf.Clamp(this.window.x, 0, Screen.width - this.window.width);
-            this.window.y = Mathf.Clamp(this.window.y, 0, Screen.height - this.window.height);
-
-            this.visible = true;
-        }
-
-        public void Hide()
+        public override void Hide()
         {
             this.visible = false;
 
+            GameEvents.onPartRemove.Remove(this.OnPartRemoved);
+
             if(!this.renderError)
             {
-                Configuration.SetValue(PartWizardWindow.WindowPositionConfigurationName, this.window);
-
-                Configuration.Save();
+                base.Hide();
             }
         }
 
-        public void Render()
+        public override void Show()
         {
-            if(this.visible && (HighLogic.LoadedScene == GameScenes.EDITOR || HighLogic.LoadedScene == GameScenes.SPH))
+            GameEvents.onPartRemove.Add(this.OnPartRemoved);
+
+            base.Show();
+        }
+
+        private void OnPartRemoved(GameEvents.HostTargetAction<Part, Part> e)
+        {
+            if(this.symmetryEditorWindow.Visible)
             {
-                GUI.skin.window.clipping = TextClipping.Clip;
-                if(Event.current.type == EventType.Layout)
+                if(PartWizard.IsSibling(e.target, this.symmetryEditorWindow.Part))
                 {
-                    this.window = GUILayout.Window(this.partWizardWindowId, this.window, OnRender, this.windowTitle);
+                    this.symmetryEditorWindow.Part = null;
                 }
             }
         }
-        
-        private void OnRender(int windowId)
-        {
-            GUIControls.BeginLayout();
 
+        public override void OnRender()
+        {
             try
             {
-                if(GUIControls.TitleBarButton(this.window))
-                {
-                    this.Hide();
-                }
-
                 if(!renderError)
                 {
                     List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
@@ -183,6 +163,8 @@ namespace PartWizard
 
                     this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
+                    Color partHighlightColor = Highlighter.DefaultColor;
+
                     foreach(Part part in parts)
                     {
                         bool mouseOver = false;         // Must be updated (|=) by each control that can trigger part highlighting when the mouse is over the part in the list.
@@ -202,22 +184,33 @@ namespace PartWizard
                         #endregion
 
                         // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
-                        GUI.enabled = !EditorLogic.SelectedPart;
-
+                        GUI.enabled = EditorLogic.SelectedPart == null;
+                        
                         #region Break Symmetry Button
 
                         bool breakSymmetryMouseOver = false;
 
                         string breakabilityReport = default(string);
-                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
+                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
 
                         string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
 
-                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, PartActionButtonWidth))
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, Configuration.PartActionButtonWidth))
                         {
-                            PartWizard.BreakSymmetry(part);
+                            this.symmetryEditorWindow.Part = part;
 
-                            Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] {0} symmetry broken", part.name));
+                            if(!this.symmetryEditorWindow.Visible)
+                            {
+                                this.symmetryEditorWindow.Show(this);
+
+                                // Short circuit the mouse over for breaking symmetry when showing the Symmetry Editor in case it appears over top of this
+                                // button and immediately begins highlighting parts. This would cause *this* window's highlighting to be stuck on the part.
+                                breakSymmetryMouseOver = false;
+                            }
+                            else
+                            {
+                                this.symmetryEditorWindow.Hide();
+                            }
                         }
 
                         mouseOver |= breakSymmetryMouseOver;
@@ -230,19 +223,22 @@ namespace PartWizard
 
                         bool deleted = false;                   // Will be set to true if the delete button was pressed.
 
-                        GUI.enabled = !EditorLogic.SelectedPart && PartWizard.IsDeleteable(part);
+                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.IsDeleteable(part);
 
                         string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
-
-                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, PartActionButtonWidth))
+                        
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, Configuration.PartActionButtonWidth))
                         {
-                            Debug.Log(string.Format(CultureInfo.InvariantCulture, "[PartWizard] deleting part {0}", part.name));
+                            Log.Write("[PartWizard] deleting part {0}", part.name);
 
                             PartWizard.Delete(part);
 
                             // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
                             deleted = true;
                         }
+
+                        // Set a special color when the delete button is enabled and the mouse is over it.
+                        partHighlightColor = GUI.enabled && deleteButtonMouseOver ? Color.red : partHighlightColor;
 
                         mouseOver |= deleteButtonMouseOver;
 
@@ -254,19 +250,15 @@ namespace PartWizard
 
                         if(!deleted)
                         {
+                            // TODO: Fix domino logic.
                             if(mouseOver)
                             {
-                                part.SetHighlight(true);
-
                                 this.controllingPartHighlight = true;
-                                this.highlightedPartId = part.uid;
+                                this.highlightedPart = part;
                             }
-                            else if(controllingPartHighlight && part.uid == this.highlightedPartId)
+                            else if(controllingPartHighlight && part.uid == this.highlightedPart.uid)
                             {
-                                part.SetHighlight(false);
-
                                 this.controllingPartHighlight = false;
-                                this.highlightedPartId = 0;
                             }
                         }
 
@@ -274,6 +266,19 @@ namespace PartWizard
                         if(deleted)
                         {
                             break;
+                        }
+                    }
+
+                    if(this.controllingPartHighlight)
+                    {
+                        Highlighter.Set(this.highlightedPart, partHighlightColor, true, EditorLogic.startPod.uid == this.highlightedPart.uid);
+                    }
+                    else
+                    {
+                        if(this.highlightedPart != null)
+                        {
+                            Highlighter.Set(this.highlightedPart, false, true, false);
+                            this.highlightedPart = null;
                         }
                     }
 
@@ -343,8 +348,6 @@ namespace PartWizard
             finally
             {
                 GUI.DragWindow();
-
-                GUIControls.EndLayout();
             }
         }
     }

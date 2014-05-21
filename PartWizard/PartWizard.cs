@@ -35,6 +35,12 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
+#if TEST
+    using Part = global::PartWizard.Test.MockPart;
+    using EditorLogic = global::PartWizard.Test.MockEditorLogic;
+    using Staging = global::PartWizard.Test.MockStaging;
+#endif
+
     /// <summary>
     /// Provides the addon's part manipulation capabilities.
     /// </summary>
@@ -69,6 +75,29 @@ namespace PartWizard
             Staging.SortIcons();
         }
 
+        public static Part FindSymmetryRoot(Part part)
+        {
+            if(part == null)
+                throw new ArgumentNullException("part");
+
+            Part result = part;
+
+            // If we don't have the symmetry root part, we need to find it.
+            if(result.symmetryMode != 0)
+            {
+                foreach(Part counterpart in result.symmetryCounterparts)
+                {
+                    if(counterpart.symmetryMode == 0)
+                    {
+                        result = counterpart;
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Breaks the symmetry of a part and all of its child parts.
         /// </summary>
@@ -78,20 +107,7 @@ namespace PartWizard
             if(part == null)
                 throw new ArgumentNullException("part");
 
-            Part symmetryRootPart = part;
-
-            // If we don't have the symmetry root part, we need to find it.
-            if(symmetryRootPart.symmetryMode != 0)
-            {
-                foreach(Part counterpart in symmetryRootPart.symmetryCounterparts)
-                {
-                    if(counterpart.symmetryMode == 0)
-                    {
-                        symmetryRootPart = counterpart;
-                        break;
-                    }
-                }
-            }
+            Part symmetryRootPart = PartWizard.FindSymmetryRoot(part);
 
             // Get the prototype part's list of symmetry counterparts because each of them needs updated to break
             // symmetry.
@@ -122,6 +138,140 @@ namespace PartWizard
 
             // Finally, poke the staging logic to sort out any changes due to breaking the symmetry of this part.
             Staging.SortIcons();
+        }
+
+        public static void SplitSymmetryTest(Part part)
+        {
+            if(part == null)
+                throw new ArgumentNullException("part");
+
+            Part symmetryRootPart = PartWizard.FindSymmetryRoot(part);
+
+            List<Part> symmetricParts = new List<Part>();
+
+            symmetricParts.Add(symmetryRootPart);
+            symmetricParts.AddRange(symmetryRootPart.symmetryCounterparts);
+
+            // temp just do 4 as a test: 0 & 1, 2 & 3
+            if(symmetricParts.Count == 4)
+            {
+                // first half
+                Part firstRoot = symmetricParts[0];
+                Part firstCounterpart = symmetricParts[1];
+                PartWizard.CreateSymmetry(firstRoot, new List<Part>(new Part[] { firstCounterpart }));
+                
+                // second half
+                Part secondRoot = symmetricParts[2];
+                Part secondCounterpart = symmetricParts[3];
+                PartWizard.CreateSymmetry(secondRoot, new List<Part>(new Part[] { secondCounterpart }));
+            }
+            else if(symmetricParts.Count == 3)
+            {
+                // temp test just to see how it handles splitting 3X in to 1X
+
+                Part r1 = symmetricParts[0];
+                Part r2 = symmetricParts[1];
+                Part r3 = symmetricParts[2];
+
+                PartWizard.CreateSymmetry(r1, new List<Part>());
+                PartWizard.CreateSymmetry(r2, new List<Part>());
+                PartWizard.CreateSymmetry(r3, new List<Part>());
+            }
+
+            Staging.SortIcons();
+        }
+
+        public static void CreateSymmetry(Part symmetricRoot, List<Part> counterparts)
+        {
+            if(symmetricRoot == null)
+                throw new ArgumentNullException("symmetricRoot");
+
+            if(counterparts == null)
+                throw new ArgumentNullException("counterparts");
+
+            // The symmetric root's symmetryMode is always zero.
+            symmetricRoot.symmetryMode = 0;
+
+            // symmetryMode appears to be set to the number of counterparts.
+            int prelinarySymmetryMode = counterparts.Count;
+
+            // Clear out the current list of counterparts, we'll recreate this as we go along.
+            symmetricRoot.symmetryCounterparts.Clear();
+            
+            // Update all the counterparts...
+            for(int index = 0; index < counterparts.Count; index++)
+            {
+                Part counterpart = counterparts[index];
+
+                // Each counterpart must be added to the symmetric root's list.
+                symmetricRoot.symmetryCounterparts.Add(counterpart);
+                
+                // Clear the counterpart's list.
+                counterpart.symmetryCounterparts.Clear();
+                // Set the appropriate symmetry mode.
+                counterpart.symmetryMode = prelinarySymmetryMode;
+
+                // Add the symmetrical root part as a counterpart.
+                counterpart.symmetryCounterparts.Add(symmetricRoot);
+                
+                // Add all the *other* counterparts.
+                for(int siblingIndex = 0; siblingIndex < counterparts.Count; siblingIndex++)
+                {
+                    if(index != siblingIndex)
+                    {
+                        counterpart.symmetryCounterparts.Add(counterparts[siblingIndex]);
+                    }
+                }
+            }
+
+            // Now we must deal with the children...if they have symmetry.
+            foreach(Part child in symmetricRoot.children)
+            {
+                if(PartWizard.HasSymmetry(child))
+                {
+                    // A list to hold the relevant counterparts. We only care about the counterparts that descend from the counterparts we've been given.
+                    List<Part> childSymmetricCounterparts = new List<Part>();
+
+                    // Look through all the child's counterparts to find the ones relevant to our counterparts...
+                    foreach(Part childSymmetricCounterpart in child.symmetryCounterparts)
+                    {
+                        if(counterparts.Contains(childSymmetricCounterpart.parent))
+                        {
+                            // ...and add those to the list.
+                            childSymmetricCounterparts.Add(childSymmetricCounterpart);
+                        }
+                    }
+
+                    // We now have a part and a list of parts to make symmetrical, which we already know how to do!
+                    PartWizard.CreateSymmetry(child, childSymmetricCounterparts);
+                }
+            }
+        }
+
+        public static bool IsSibling(Part part, Part family)
+        {
+            if(part == null)
+                throw new ArgumentNullException("part");
+
+            if(family == null)
+                throw new ArgumentNullException("family");
+
+            bool result = object.ReferenceEquals(part, family);
+
+            if(!result)
+            {
+                foreach(Part sibling in family.symmetryCounterparts)
+                {
+                    result = object.ReferenceEquals(part, sibling);
+
+                    if(result)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
