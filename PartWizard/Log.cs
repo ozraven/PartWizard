@@ -42,6 +42,26 @@ namespace PartWizard
 
         private static readonly DateTime start = DateTime.Now;
 
+        public static void Assert(bool condition)
+        {
+#if DEBUG || TEST
+            if(!condition)
+            {
+                Log.Write("Assertion failed in {0}.", Log.GetCallingMethod(2));
+            }
+#endif
+        }
+
+        public static void Assert(bool condition, string format, params object[] args)
+        {
+#if DEBUG || TEST
+            if(!condition)
+            {
+                Log.Write("Assertion failed in {0}: {1}", Log.GetCallingMethod(2), string.Format(format, args));
+            }
+#endif
+        }
+
         public static void Trace()
         {
             Log.Write("{0}", Log.GetCallingMethod(2));

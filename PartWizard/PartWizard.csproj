@@ -82,7 +82,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GUIControls.cs" />
-    <Compile Include="Highlighter.cs" />
     <Compile Include="HighlightTracker.cs" />
     <Compile Include="HighlightTrackerException.cs" />
     <Compile Include="Log.cs" />

@@ -3,3 +3,5 @@
 Debug
 /PartWizard/bin/Release
 /PartWizard/obj/Release
+/PartWizard/bin/Test
+/PartWizard/obj/Test

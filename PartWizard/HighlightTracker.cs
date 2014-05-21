@@ -36,15 +36,72 @@ namespace PartWizard
     
     internal sealed class HighlightTracker
     {
-        private Dictionary<Part, Color> parts;
-        private Dictionary<Part, Color> previousParts;
+        #region Global Part Highlight Tracking
+
+        private class Pair<T> where T : new()
+        {
+            public T Left;
+            public T Right;
+
+            public Pair()
+            {
+                this.Left = new T();
+                this.Right = new T();
+            }
+
+            public Pair(T left, T right)
+            {
+                this.Left = left;
+                this.Right = right;
+            }
+
+            public void Swap()
+            {
+                T temp = this.Left;
+                this.Left = this.Right;
+                this.Right = temp;
+            }
+        }
+
+        private static int nextInstance = 0;
+        private static Dictionary<int, Pair<Dictionary<Part, Color>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, Color>>>();
+
+        #endregion
+
+        private int instance;
         private volatile bool tracking;
+
+        #region Private Logic Simplifiers
+
+        private Dictionary<Part, Color> Parts
+        {
+            get
+            {
+                return HighlightTracker.instanceParts[this.instance].Left;
+            }
+        }
+
+        private Dictionary<Part, Color> PreviousParts
+        {
+            get
+            {
+                return HighlightTracker.instanceParts[this.instance].Right;
+            }
+        }
+
+        private void Swap()
+        {
+            HighlightTracker.instanceParts[this.instance].Swap();
+        }
+
+        #endregion
 
         public HighlightTracker()
         {
-            this.parts = new Dictionary<Part, Color>();
-            this.previousParts = new Dictionary<Part, Color>();
+            this.instance = HighlightTracker.nextInstance++;
             this.tracking = false;
+
+            HighlightTracker.instanceParts.Add(this.instance, new Pair<Dictionary<Part, Color>>());
         }
 
         public void BeginTracking()
@@ -78,20 +135,62 @@ namespace PartWizard
 
             if(part == null)
                 throw new ArgumentNullException("part");
-
-            if(!this.parts.ContainsKey(part) && this.previousParts.ContainsKey(part))
+            
+            if(!this.Parts.ContainsKey(part) && this.PreviousParts.ContainsKey(part))
             {
-                Color originalHighlightColor = this.previousParts[part];
-                this.previousParts.Remove(part);
+                Color originalHighlightColor = this.PreviousParts[part];
+                this.PreviousParts.Remove(part);
 
-                this.parts.Add(part, originalHighlightColor);
+                this.Parts.Add(part, originalHighlightColor);
             }
-            if(!this.parts.ContainsKey(part) && !this.previousParts.ContainsKey(part))
+            if(!this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
             {
-                this.parts.Add(part, part.highlightColor);
+                bool found = false;
+
+                foreach(var globalParts in HighlightTracker.instanceParts)
+                {
+                    if(globalParts.Key != this.instance)
+                    {
+                        if(globalParts.Value.Left.ContainsKey(part))
+                        {
+                            this.Transfer(part, globalParts.Value.Left, this.Parts);
+
+                            found = true;
+
+                            break;
+                        }
+                        else if(globalParts.Value.Right.ContainsKey(part))
+                        {
+                            this.Transfer(part, globalParts.Value.Right, this.Parts);
+
+                            found = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if(!found)
+                {
+                    this.Parts.Add(part, part.highlightColor);
+                }
             }
+            //else if(this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
+            //{
+            //}
+
+            // We should have it!
+            Log.Assert(this.Parts.ContainsKey(part));
 
             part.SetHighlightColor(color);
+        }
+
+        private void Transfer(Part part, Dictionary<Part, Color> source, Dictionary<Part, Color> destination)
+        {
+            Color originalHightlightColor = source[part];
+            source.Remove(part);
+
+            destination.Add(part, originalHightlightColor);
         }
 
         public void Add(PartGroup group, Color color)
@@ -113,18 +212,16 @@ namespace PartWizard
             if(!tracking)
                 throw new GUIControlsException("iwiweiewie");
 
-            foreach(Part part in this.parts.Keys)
+            foreach(Part part in this.Parts.Keys)
             {
                 part.SetHighlight(true);
             }
 
-            this.Restore(this.previousParts);
+            this.Restore(this.PreviousParts);
 
-            previousParts.Clear();
+            PreviousParts.Clear();
 
-            var swap = this.previousParts;
-            this.previousParts = this.parts;
-            this.parts = swap;
+            this.Swap();
 
             this.tracking = false;
         }
@@ -134,17 +231,17 @@ namespace PartWizard
             this.tracking = false;
 
             // Eliminate duplicates held in previousParts.
-            foreach(Part part in this.parts.Keys)
+            foreach(Part part in this.Parts.Keys)
             {
-                this.previousParts.Remove(part);
+                this.PreviousParts.Remove(part);
             }
             
             // Now previousParts and parts have all the parts we need to restore.
-            this.Restore(this.parts);
-            this.Restore(this.previousParts);
+            this.Restore(this.Parts);
+            this.Restore(this.PreviousParts);
             
-            this.parts.Clear();
-            this.previousParts.Clear();
+            this.Parts.Clear();
+            this.PreviousParts.Clear();
         }
 
         private void Restore(Dictionary<Part, Color> parts)
