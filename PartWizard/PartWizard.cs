@@ -75,6 +75,7 @@ namespace PartWizard
             Staging.SortIcons();
         }
 
+#if DEBUG
         public static Part FindSymmetryRoot(Part part)
         {
             if(part == null)
@@ -97,6 +98,7 @@ namespace PartWizard
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Breaks the symmetry of a part and all of its child parts.

@@ -34,6 +34,8 @@ namespace PartWizard
     using Part = global::PartWizard.Test.MockPart;
 #endif
     
+    // TODO: Track recursive to support highlighting individual parts regardless of their "external" setting.
+    // TODO: Can interference from other plugins that change highlighting be avoided by tracking our GUI's layers, or by other means?
     internal sealed class HighlightTracker
     {
         #region Global Part Highlight Tracking
@@ -104,6 +106,7 @@ namespace PartWizard
             HighlightTracker.instanceParts.Add(this.instance, new Pair<Dictionary<Part, Color>>());
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CancelTracking"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndTracking")]
         public void BeginTracking()
         {
             if(tracking)
@@ -153,7 +156,7 @@ namespace PartWizard
                     {
                         if(globalParts.Value.Left.ContainsKey(part))
                         {
-                            this.Transfer(part, globalParts.Value.Left, this.Parts);
+                            HighlightTracker.Transfer(part, globalParts.Value.Left, this.Parts);
 
                             found = true;
 
@@ -161,7 +164,7 @@ namespace PartWizard
                         }
                         else if(globalParts.Value.Right.ContainsKey(part))
                         {
-                            this.Transfer(part, globalParts.Value.Right, this.Parts);
+                            HighlightTracker.Transfer(part, globalParts.Value.Right, this.Parts);
 
                             found = true;
 
@@ -185,7 +188,7 @@ namespace PartWizard
             part.SetHighlightColor(color);
         }
 
-        private void Transfer(Part part, Dictionary<Part, Color> source, Dictionary<Part, Color> destination)
+        private static void Transfer(Part part, Dictionary<Part, Color> source, Dictionary<Part, Color> destination)
         {
             Color originalHightlightColor = source[part];
             source.Remove(part);
@@ -210,14 +213,14 @@ namespace PartWizard
         public void EndTracking()
         {
             if(!tracking)
-                throw new GUIControlsException("iwiweiewie");
+                throw new GUIControlsException("Highlight tracking must be started before tracking can be completed.");
 
             foreach(Part part in this.Parts.Keys)
             {
                 part.SetHighlight(true);
             }
 
-            this.Restore(this.PreviousParts);
+            HighlightTracker.Restore(this.PreviousParts);
 
             PreviousParts.Clear();
 
@@ -237,14 +240,14 @@ namespace PartWizard
             }
             
             // Now previousParts and parts have all the parts we need to restore.
-            this.Restore(this.Parts);
-            this.Restore(this.PreviousParts);
+            HighlightTracker.Restore(this.Parts);
+            HighlightTracker.Restore(this.PreviousParts);
             
             this.Parts.Clear();
             this.PreviousParts.Clear();
         }
 
-        private void Restore(Dictionary<Part, Color> parts)
+        private static void Restore(Dictionary<Part, Color> parts)
         {
             foreach(KeyValuePair<Part, Color> partColor in parts)
             {

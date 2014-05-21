@@ -55,7 +55,6 @@ namespace PartWizard
         private const string WindowPositionConfigurationName = "PART_WIZARD_WINDOW";
 
         private string pluginName;
-        private string windowTitle;
 
         private GUIStyle tooltipLabelStyle;
         private GUIStyle partCountLabelStyle;
@@ -88,7 +87,7 @@ namespace PartWizard
             : base(Scene.Editor, new Rect(DefaultX, DefaultY, DefaultWidth, DefaultHeight), new Rect(DefaultX + DefaultWidth, DefaultY, DefaultWidth, DefaultHeight), name, WindowPositionConfigurationName)
         {
             this.pluginName = name;
-            this.windowTitle = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", name, version);
+            this.Title = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", name, version);
 
             this.tooltipLabelStyle = new GUIStyle();
             this.tooltipLabelStyle.normal.textColor = TooltipLabelColor;
@@ -144,6 +143,12 @@ namespace PartWizard
         {
             try
             {
+                // TODO: Colors need to be made constants.
+                // TODO: Colorizing needs tweaked: delete should show all parts in red, not just the root part, etc.
+                // TODO: Splitting 4X in to two 2X, once the Symmetry Editor window closes and the mouse cursor stays over this window, both symmetrical parts are green
+                // rather than the intended root = green, counterparts = yellow.
+                // TODO: When the delete button is disabled, don't highlight the part red - it should just be the normal part mouseover color.
+
                 if(!renderError)
                 {
                     List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
@@ -169,25 +174,13 @@ namespace PartWizard
 
                     this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
-                    //Color partHighlightColor = Highlighter.DefaultColor;
-
                     foreach(Part part in parts)
                     {
-                        //bool mouseOver = false;         // Must be updated (|=) by each control that can trigger part highlighting when the mouse is over the part in the list.
-
-                        //GUILayout.BeginHorizontal();
                         GUIControls.BeginMouseOverHorizontal();
 
                         #region Part Label
 
-                        //bool labelMouseOver = false;    // Will be set to true if the mouse is over the part's label.
-
-                        // We want to draw the part's name first, but it won't exist when the time comes to render it if the user chooses to delete it. DisplayName() must be
-                        // careful to make sure the part still exists.
-                        //GUIControls.MouseOverLabel(new GUIContent(part.partInfo.title, part.partInfo.name), out labelMouseOver);
                         GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name));
-
-                        //mouseOver |= labelMouseOver;
 
                         #endregion
 
@@ -220,8 +213,6 @@ namespace PartWizard
                             }
                         }
 
-                        //mouseOver |= breakSymmetryMouseOver;
-
                         #endregion
 
                         #region Delete Button
@@ -243,32 +234,12 @@ namespace PartWizard
                             deleted = true;
                         }
 
-                        // Set a special color when the delete button is enabled and the mouse is over it.
-                        //partHighlightColor = GUI.enabled && deleteButtonMouseOver ? Color.red : partHighlightColor;
-
-                        //mouseOver |= deleteButtonMouseOver;
-
                         #endregion
 
                         GUI.enabled = true;
 
-                        //GUILayout.EndHorizontal();      // End of row for this part.
                         bool groupMouseOver = false;
-                        GUIControls.EndMouseOverHorizontal(out groupMouseOver);
-
-                        //if(!deleted)
-                        //{
-                        //     TODO: Fix domino logic.
-                        //    if(mouseOver)
-                        //    {
-                        //        this.controllingPartHighlight = true;
-                        //        this.highlightedPart = part;
-                        //    }
-                        //    else if(controllingPartHighlight && part.uid == this.highlightedPart.uid)
-                        //    {
-                        //        this.controllingPartHighlight = false;
-                        //    }
-                        //}
+                        GUIControls.EndMouseOverHorizontal(out groupMouseOver);     // End of row for this part.
 
                         // If we deleted a part, then just jump out of the loop since the parts list has been modified.
                         if(deleted)
@@ -289,20 +260,7 @@ namespace PartWizard
                             this.highlight.Add(part, Color.green, Color.green);
                         }
                     }
-
-                    //if(this.controllingPartHighlight)
-                    //{
-                    //    Highlighter.Set(this.highlightedPart, partHighlightColor, true, EditorLogic.startPod.uid == this.highlightedPart.uid);
-                    //}
-                    //else
-                    //{
-                    //    if(this.highlightedPart != null)
-                    //    {
-                    //        Highlighter.Set(this.highlightedPart, false, true, false);
-                    //        this.highlightedPart = null;
-                    //    }
-                    //}
-
+                    
                     GUILayout.EndScrollView();
 
                     #region Status Area

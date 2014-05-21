@@ -47,7 +47,13 @@ namespace PartWizard
 #if DEBUG || TEST
             if(!condition)
             {
-                Log.Write("Assertion failed in {0}.", Log.GetCallingMethod(2));
+                string message = string.Format(CultureInfo.InvariantCulture, "Assertion failed in {0}.", Log.GetCallingMethod(2));
+
+#if TEST
+                throw new Exception(message);
+#endif
+
+                Log.Write(message);
             }
 #endif
         }
@@ -57,11 +63,18 @@ namespace PartWizard
 #if DEBUG || TEST
             if(!condition)
             {
-                Log.Write("Assertion failed in {0}: {1}", Log.GetCallingMethod(2), string.Format(format, args));
+                string message = string.Format(CultureInfo.InvariantCulture, "Assertion failed in {0}: {1}", Log.GetCallingMethod(2), string.Format(CultureInfo.InvariantCulture, format, args));
+
+#if TEST
+                throw new Exception(message);
+#endif
+
+                Log.Write(message);
             }
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static void Trace()
         {
             Log.Write("{0}", Log.GetCallingMethod(2));

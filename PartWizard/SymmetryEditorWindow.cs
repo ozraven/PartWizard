@@ -102,6 +102,15 @@ namespace PartWizard
         {
             // TODO: Move error failsafe to base class.
             // TODO: Make two renders, one for normal and one for the error mode.
+
+            // TODO: Colors need to be made constants.
+            // TODO: Colorizing needs tweaked: group coloring should be uniform, part coloring should be unique with counterparts the same as group coloring.
+            // TODO: Possibly allow customizing each group's color.
+
+            // TODO: Localize user strings.
+
+            // TODO: Put a subtle border around each group to help visually separate it from the other groups.
+
             if(!error)
             {
                 try

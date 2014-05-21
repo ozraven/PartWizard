@@ -37,19 +37,17 @@ namespace PartWizard
     internal class PartGroup
     {
         public readonly List<Part> Parts;
-        public Vector2 ScrollPosition;
 
         public PartGroup()
         {
             this.Parts = new List<Part>();
-            this.ScrollPosition = Vector2.zero;
         }
 
         public PartGroup(Part part)
             : this()
         {
             if(part == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("part");
 
             this.Parts.Add(part);
         }

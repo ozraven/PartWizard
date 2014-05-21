@@ -195,24 +195,6 @@ namespace PartWizard
             }
         }
 
-        /// <summary>
-        /// Provides a GUILayout label control that can detect if the mouse is within its area.
-        /// </summary>
-        /// <param name="content">The content to display in the label.</param>
-        /// <param name="mouseOver">Set to true if the mouse is over this label's area; false if not.</param>
-        /// <param name="options">The usual GUILayoutOption parameters; see Unity documentation.</param>
-        public static void MouseOverLabel(GUIContent content, out bool mouseOver, params GUILayoutOption[] options)
-        {
-            GUILayout.Label(content, options);
-
-            mouseOver = false;
-
-            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
-            {
-                mouseOver = true;
-            }
-        }
-
         public static bool MouseOverWindow(ref Rect window)
         {
             bool result = false;

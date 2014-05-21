@@ -125,18 +125,6 @@ namespace PartWizard
             return result;
         }
 
-        private static Scene SceneFromGameScenes(params GameScenes[] gameScenes)
-        {
-            Scene result = Scene.None;
-
-            foreach(GameScenes gameScene in gameScenes)
-            {
-                result |= SceneFromGameScenes(gameScene);
-            }
-
-            return result;
-        }
-
         #endregion
 
         protected Window(Scene scene, Rect defaultDimensions, string title, string configurationNodeName)
@@ -182,7 +170,7 @@ namespace PartWizard
             this.Show(null);
         }
 
-        public void Show(Window parent)
+        public void Show(Window parentWindow)
         {
             this.window = Configuration.GetValue(this.configurationNodeName, this.window);
 
@@ -193,9 +181,9 @@ namespace PartWizard
 
             this.visible = true;
 
-            if(parent != null)
+            if(parentWindow != null)
             {
-                this.parent = parent;
+                this.parent = parentWindow;
                 this.parent.children.Add(this);
             }
         }
