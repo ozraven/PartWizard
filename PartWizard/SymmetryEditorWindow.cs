@@ -57,7 +57,7 @@ namespace PartWizard
         private static readonly GUIContent AddGroupButtonText = new GUIContent(Localized.AddGroupButtonText);
 
         public SymmetryEditorWindow()
-            : base(Scene.Editor, SymmetryEditorWindow.DefaultDimensions, SymmetryEditorWindow.MinimumDimensions, "NO PART", "SYMMETRY_EDITOR_WINDOW")
+            : base(Scene.Editor, SymmetryEditorWindow.DefaultDimensions, SymmetryEditorWindow.MinimumDimensions, Localized.SymmetryEditor, "SYMMETRY_EDITOR_WINDOW")
         {
             this.highlight = new HighlightTracker();
 
