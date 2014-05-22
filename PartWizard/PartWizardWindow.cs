@@ -89,7 +89,7 @@ namespace PartWizard
             this.pluginName = name;
             this.Title = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", name, version);
 
-            this.tooltipLabelStyle = new GUIStyle();
+            this.tooltipLabelStyle = new GUIStyle(GUIControls.PanelStyle);
             this.tooltipLabelStyle.normal.textColor = TooltipLabelColor;
 
             this.partCountLabelStyle = new GUIStyle();
@@ -143,11 +143,8 @@ namespace PartWizard
         {
             try
             {
-                // TODO: Colors need to be made constants.
-                // TODO: Colorizing needs tweaked: delete should show all parts in red, not just the root part, etc.
                 // TODO: Splitting 4X in to two 2X, once the Symmetry Editor window closes and the mouse cursor stays over this window, both symmetrical parts are green
                 // rather than the intended root = green, counterparts = yellow.
-                // TODO: When the delete button is disabled, don't highlight the part red - it should just be the normal part mouseover color.
 
                 if(!renderError)
                 {
@@ -172,6 +169,10 @@ namespace PartWizard
 
                     #endregion
 
+                    #region Part List
+
+                    GUILayout.BeginVertical(GUIControls.PanelStyle);
+
                     this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
                     foreach(Part part in parts)
@@ -187,6 +188,8 @@ namespace PartWizard
                         // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
                         GUI.enabled = EditorLogic.SelectedPart == null;
                         
+                        // TODO: Log symmetry modifications.
+
                         #region Break Symmetry Button
 
                         string breakabilityReport = default(string);
@@ -213,6 +216,8 @@ namespace PartWizard
                             }
                         }
 
+                        breakSymmetryMouseOver &= GUI.enabled;  // Clear mouse over flag if the symmetry button was disabled.
+
                         #endregion
 
                         #region Delete Button
@@ -221,18 +226,22 @@ namespace PartWizard
 
                         GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.IsDeleteable(part);
 
-                        string deleteTooltip = GUI.enabled ? Localized.DeletePartDescription : default(string);
+                        string deleteTooltip = GUI.enabled 
+                            ? ((part.symmetryCounterparts.Count == 0) ? Localized.DeletePartSingularDescription : Localized.DeletePartPluralDescription)
+                            : default(string);
 
                         bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
                         if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, Configuration.PartActionButtonWidth))
                         {
-                            Log.Write("[PartWizard] deleting part {0}", part.name);
+                            Log.Write("Deleting part {0}.", part.name);
 
                             PartWizard.Delete(part);
 
                             // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
                             deleted = true;
                         }
+
+                        deleteButtonMouseOver &= GUI.enabled;   // Clear mouse over flag if the delete button was disabled.
 
                         #endregion
 
@@ -247,21 +256,31 @@ namespace PartWizard
                             break;
                         }
 
+                        #region Part Highlighting Control
+
                         if(breakSymmetryMouseOver)
                         {
-                            this.highlight.Add(part, Color.green, Color.yellow);
+                            this.highlight.Add(part, Configuration.HighlightColorEditableSymmetryRoot, Configuration.HighlightColorEditableSymmetryCounterparts);
                         }
                         else if(deleteButtonMouseOver)
                         {
-                            this.highlight.Add(part, Color.red, Color.yellow);
+                            this.highlight.Add(part, Configuration.HighlightColorDeletablePart, Configuration.HighlightColorDeletableCounterparts, true);
                         }
                         else if(groupMouseOver)
                         {
-                            this.highlight.Add(part, Color.green, Color.green);
+                            Color highlightColor = (part.uid != EditorLogic.startPod.uid) ? Configuration.HighlightColorSinglePart : Configuration.HighlightColorRootPart;
+
+                            this.highlight.Add(part, highlightColor, Configuration.HighlightColorCounterparts, false);
                         }
+
+                        #endregion
                     }
                     
                     GUILayout.EndScrollView();
+
+                    GUILayout.EndVertical();
+
+                    #endregion
 
                     #region Status Area
 
@@ -271,18 +290,32 @@ namespace PartWizard
 
                     if(!string.IsNullOrEmpty(GUI.tooltip))
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTooltipTextFormat, parts.Count, GUI.tooltip);
+                        if(parts.Count != 1)
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTooltipTextFormat, parts.Count, GUI.tooltip);
+                        }
+                        else
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTooltipTextFormat, parts.Count, GUI.tooltip);
+                        }
                     }
                     else
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelTextFormat, parts.Count);
+                        if(parts.Count != 1)
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTextFormat, parts.Count);
+                        }
+                        else
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTextFormat, parts.Count);
+                        }
                     }
 
                     GUILayout.Label(status, this.tooltipLabelStyle);
 
-                    GUILayout.EndVertical();
-
                     #endregion
+
+                    GUILayout.EndVertical();
                 }
                 else
                 {
@@ -295,7 +328,7 @@ namespace PartWizard
                     GUILayoutOption lockWidth = GUILayout.ExpandWidth(false);
                     GUILayoutOption lockHeight = GUILayout.ExpandHeight(false);
 
-                    GUILayout.Label(string.Format(CultureInfo.CurrentCulture, Localized.GuiRenderErrorTextFormat, this.pluginName), maxWidth, maxHeight, lockWidth, lockHeight);
+                    GUILayout.Label(string.Format(CultureInfo.CurrentCulture, Localized.GuiRenderErrorTextFormat, this.pluginName), GUIControls.PanelStyle, maxWidth, maxHeight, lockWidth, lockHeight);
 
                     // Fix up the path for the current environment.
                     string platformCompatibleRootPath = KSPUtil.ApplicationRootPath.Replace('/', Path.DirectorySeparatorChar);
@@ -304,7 +337,7 @@ namespace PartWizard
                     string kspDataPath = Path.Combine(actualRootPath, "KSP_Data");
                     string kspLogFile = Path.Combine(kspDataPath, "output_log.txt");
 
-                    GUIStyle textFieldStyle = new GUIStyle();
+                    GUIStyle textFieldStyle = new GUIStyle(GUIControls.PanelStyle);
                     textFieldStyle.wordWrap = true;
                     textFieldStyle.normal.textColor = Color.white;
 
@@ -319,7 +352,7 @@ namespace PartWizard
             {
                 this.renderError = true;
 
-                Debug.LogError("PartWizard :: Window rendering error, details follow:");
+                Log.Trace("Window rendering error, details follow:");
                 Debug.LogException(e);
 
                 throw;

@@ -61,6 +61,15 @@ namespace PartWizard
 
         public static readonly GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
 
+        public static readonly Color HighlightColorDeletablePart = Color.red;
+        public static readonly Color HighlightColorDeletableCounterparts = Color.red;
+        public static readonly Color HighlightColorSinglePart = Color.green;
+        public static readonly Color HighlightColorCounterparts = Color.yellow;
+        public static readonly Color HighlightColorEditableSymmetryRoot = Color.yellow;
+        public static readonly Color HighlightColorEditableSymmetryCounterparts = Color.yellow;
+        public static readonly Color HighlightColorRootPart = Color.blue;
+        public static readonly Color HighlightColorSymmetryEditor = Color.cyan;
+
         static Configuration()
         {
             if(Configuration.Root.GetNode(Configuration.SettingsNodeName) == null)

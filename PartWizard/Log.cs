@@ -128,6 +128,13 @@ namespace PartWizard
             return result;
         }
 
+        // TODO: PartWizardWindow doesn't seem to be saving/restoring window location properly.
+        // TODO: Test to make sure windows appear in sane places when starting without a .cfg file.
+        // TODO: Left justify status bar text.
+        // TODO: Status bar text needs shorter/window needs wider because getting string truncating on most every message.
+        // TODO: Clicking Break Symmetry button toggles the Symmetry Editor window; it should open it if hidden, or just switch parts if it is visible.
+        // TODO: Test for highlighting problems when in AG mode.
+
         public static void WriteSymmetryReport(Part part)
         {
 #if DEBUG
@@ -146,6 +153,7 @@ namespace PartWizard
                 Log.Write("\t{0} name = {1}", index, c.name);
                 Log.Write("\t{0} uid = {1}", index, c.uid);
                 Log.Write("\t{0} symmetryMode = {1}", index, c.symmetryMode);
+                Log.Write("\t{0} children = {1}", index, c.children.Count);
             }
             Log.Write("END OF REPORT");
 #endif

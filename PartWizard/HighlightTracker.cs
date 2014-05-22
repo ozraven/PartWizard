@@ -34,7 +34,6 @@ namespace PartWizard
     using Part = global::PartWizard.Test.MockPart;
 #endif
     
-    // TODO: Track recursive to support highlighting individual parts regardless of their "external" setting.
     // TODO: Can interference from other plugins that change highlighting be avoided by tracking our GUI's layers, or by other means?
     internal sealed class HighlightTracker
     {
@@ -66,16 +65,43 @@ namespace PartWizard
         }
 
         private static int nextInstance = 0;
-        private static Dictionary<int, Pair<Dictionary<Part, Color>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, Color>>>();
+        private static Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>>();
 
         #endregion
+
+        private class HighlightInfo
+        {
+            public class HighlightState
+            {
+                public Color HighlightColor;
+                public bool HighlightRecursive;
+
+                public HighlightState(Color highlightColor, bool highlightRecursive)
+                {
+                    this.HighlightColor = highlightColor;
+                    this.HighlightRecursive = highlightRecursive;
+                }
+            }
+
+            public HighlightState Original;
+
+            public HighlightInfo(Color originalHighlightColor)
+                : this(originalHighlightColor, false)
+            {
+            }
+
+            public HighlightInfo(Color originalHighlightColor, bool originalHighlightRecursive)
+            {
+                this.Original = new HighlightState(originalHighlightColor, originalHighlightRecursive);
+            }
+        }
 
         private int instance;
         private volatile bool tracking;
 
         #region Private Logic Simplifiers
 
-        private Dictionary<Part, Color> Parts
+        private Dictionary<Part, HighlightInfo> Parts
         {
             get
             {
@@ -83,7 +109,7 @@ namespace PartWizard
             }
         }
 
-        private Dictionary<Part, Color> PreviousParts
+        private Dictionary<Part, HighlightInfo> PreviousParts
         {
             get
             {
@@ -103,7 +129,7 @@ namespace PartWizard
             this.instance = HighlightTracker.nextInstance++;
             this.tracking = false;
 
-            HighlightTracker.instanceParts.Add(this.instance, new Pair<Dictionary<Part, Color>>());
+            HighlightTracker.instanceParts.Add(this.instance, new Pair<Dictionary<Part, HighlightInfo>>());
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CancelTracking"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndTracking")]
@@ -117,34 +143,40 @@ namespace PartWizard
 
         public void Add(Part part, Color color, Color symmetryColor)
         {
-            if(!tracking)
-                throw new HighlightTrackerException("Highlight tracking must be started before adding parts to track.");
-
-            if(part == null)
-                throw new ArgumentNullException("part");
-
-            this.Add(part, color);
-
-            foreach(Part counterpart in part.symmetryCounterparts)
-            {
-                this.Add(counterpart, symmetryColor);
-            }
+            this.Add(part, color, symmetryColor, false);
         }
 
-        public void Add(Part part, Color color)
+        public void Add(Part part, Color color, Color symmetryColor, bool recursive)
         {
             if(!tracking)
                 throw new HighlightTrackerException("Highlight tracking must be started before adding parts to track.");
 
             if(part == null)
                 throw new ArgumentNullException("part");
-            
+
+            this.Add(part, color, recursive);
+
+            foreach(Part counterpart in part.symmetryCounterparts)
+            {
+                this.Add(counterpart, symmetryColor, recursive);
+            }
+        }
+
+        public void Add(Part part, Color color, bool recursive)
+        {
+            if(!tracking)
+                throw new HighlightTrackerException("Highlight tracking must be started before adding parts to track.");
+
+            if(part == null)
+                throw new ArgumentNullException("part");
+
             if(!this.Parts.ContainsKey(part) && this.PreviousParts.ContainsKey(part))
             {
-                Color originalHighlightColor = this.PreviousParts[part];
+                HighlightInfo highlightInfo = this.PreviousParts[part];
+
                 this.PreviousParts.Remove(part);
 
-                this.Parts.Add(part, originalHighlightColor);
+                this.Parts.Add(part, highlightInfo);
             }
             if(!this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
             {
@@ -175,28 +207,33 @@ namespace PartWizard
 
                 if(!found)
                 {
-                    this.Parts.Add(part, part.highlightColor);
+                    HighlightInfo highlightInfo = new HighlightInfo(part.highlightColor, part.highlightRecurse);
+
+                    this.Parts.Add(part, highlightInfo);
                 }
             }
-            //else if(this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
-            //{
-            //}
-
+            
             // We should have it!
             Log.Assert(this.Parts.ContainsKey(part));
 
+            part.highlightRecurse = recursive;
             part.SetHighlightColor(color);
         }
 
-        private static void Transfer(Part part, Dictionary<Part, Color> source, Dictionary<Part, Color> destination)
+        public void Add(Part part, Color color)
         {
-            Color originalHightlightColor = source[part];
-            source.Remove(part);
-
-            destination.Add(part, originalHightlightColor);
+            this.Add(part, color, false);
         }
 
-        public void Add(PartGroup group, Color color)
+        private static void Transfer(Part part, Dictionary<Part, HighlightInfo> source, Dictionary<Part, HighlightInfo> destination)
+        {
+            HighlightInfo highlightInfo = source[part];
+            source.Remove(part);
+
+            destination.Add(part, highlightInfo);
+        }
+
+        public void Add(PartGroup group, Color color, bool recursive)
         {
             if(!tracking)
                 throw new HighlightTrackerException("Highlight tracking must be started before adding part groups to track.");
@@ -206,8 +243,13 @@ namespace PartWizard
 
             foreach(Part part in group.Parts)
             {
-                this.Add(part, color);
+                this.Add(part, color, recursive);
             }
+        }
+
+        public void Add(PartGroup group, Color color)
+        {
+            this.Add(group, color, false);
         }
 
         public void EndTracking()
@@ -247,12 +289,13 @@ namespace PartWizard
             this.PreviousParts.Clear();
         }
 
-        private static void Restore(Dictionary<Part, Color> parts)
+        private static void Restore(Dictionary<Part, HighlightInfo> parts)
         {
-            foreach(KeyValuePair<Part, Color> partColor in parts)
+            foreach(KeyValuePair<Part, HighlightInfo> partHighlightInfo in parts)
             {
-                partColor.Key.SetHighlightColor(partColor.Value);
-                partColor.Key.SetHighlight(false);
+                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.HighlightRecursive;
+                partHighlightInfo.Key.SetHighlightColor(partHighlightInfo.Value.Original.HighlightColor);
+                partHighlightInfo.Key.SetHighlight(false);
             }
         }
     }

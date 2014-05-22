@@ -52,6 +52,14 @@ namespace PartWizard
             this.Parts.Add(part);
         }
 
+        public int Count
+        {
+            get
+            {
+                return this.Parts.Count;
+            }
+        }
+
         public void MoveTo(Part part, PartGroup destination)
         {
             if(part == null)

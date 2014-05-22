@@ -61,6 +61,15 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add Group.
+        /// </summary>
+        internal static string AddGroupButtonText {
+            get {
+                return ResourceManager.GetString("AddGroupButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} breakable.
         /// </summary>
         internal static string Breakable {
@@ -79,11 +88,20 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to break symmetry..
+        ///   Looks up a localized string similar to break/edit symmetry..
         /// </summary>
         internal static string BreakSymmetryDescription {
             get {
                 return ResourceManager.GetString("BreakSymmetryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
         
@@ -97,11 +115,29 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to delete the highlighted parts..
+        /// </summary>
+        internal static string DeletePartPluralDescription {
+            get {
+                return ResourceManager.GetString("DeletePartPluralDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to delete the highlighted part..
         /// </summary>
-        internal static string DeletePartDescription {
+        internal static string DeletePartSingularDescription {
             get {
-                return ResourceManager.GetString("DeletePartDescription", resourceCulture);
+                return ResourceManager.GetString("DeletePartSingularDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group {0}.
+        /// </summary>
+        internal static string GroupLabelText {
+            get {
+                return ResourceManager.GetString("GroupLabelText", resourceCulture);
             }
         }
         
@@ -169,25 +205,61 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} Part(s).
+        ///   Looks up a localized string similar to OK.
         /// </summary>
-        internal static string StatusLabelTextFormat {
+        internal static string OK {
             get {
-                return ResourceManager.GetString("StatusLabelTextFormat", resourceCulture);
+                return ResourceManager.GetString("OK", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} Part(s), {1}.
+        ///   Looks up a localized string similar to Remove Group.
         /// </summary>
-        internal static string StatusLabelTooltipTextFormat {
+        internal static string RemoveGroupButtonText {
             get {
-                return ResourceManager.GetString("StatusLabelTooltipTextFormat", resourceCulture);
+                return ResourceManager.GetString("RemoveGroupButtonText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Symmetry Editor - {0} ({1}).
+        ///   Looks up a localized string similar to {0} parts..
+        /// </summary>
+        internal static string StatusLabelPluralTextFormat {
+            get {
+                return ResourceManager.GetString("StatusLabelPluralTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} parts, {1}..
+        /// </summary>
+        internal static string StatusLabelPluralTooltipTextFormat {
+            get {
+                return ResourceManager.GetString("StatusLabelPluralTooltipTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} part..
+        /// </summary>
+        internal static string StatusLabelSingularTextFormat {
+            get {
+                return ResourceManager.GetString("StatusLabelSingularTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} part, {1}..
+        /// </summary>
+        internal static string StatusLabelSingularTooltipTextFormat {
+            get {
+                return ResourceManager.GetString("StatusLabelSingularTooltipTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Symmetry Editor.
         /// </summary>
         internal static string SymmetryEditor {
             get {

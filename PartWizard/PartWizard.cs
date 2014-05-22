@@ -142,47 +142,6 @@ namespace PartWizard
             Staging.SortIcons();
         }
 
-        public static void SplitSymmetryTest(Part part)
-        {
-            if(part == null)
-                throw new ArgumentNullException("part");
-
-            Part symmetryRootPart = PartWizard.FindSymmetryRoot(part);
-
-            List<Part> symmetricParts = new List<Part>();
-
-            symmetricParts.Add(symmetryRootPart);
-            symmetricParts.AddRange(symmetryRootPart.symmetryCounterparts);
-
-            // temp just do 4 as a test: 0 & 1, 2 & 3
-            if(symmetricParts.Count == 4)
-            {
-                // first half
-                Part firstRoot = symmetricParts[0];
-                Part firstCounterpart = symmetricParts[1];
-                PartWizard.CreateSymmetry(firstRoot, new List<Part>(new Part[] { firstCounterpart }));
-                
-                // second half
-                Part secondRoot = symmetricParts[2];
-                Part secondCounterpart = symmetricParts[3];
-                PartWizard.CreateSymmetry(secondRoot, new List<Part>(new Part[] { secondCounterpart }));
-            }
-            else if(symmetricParts.Count == 3)
-            {
-                // temp test just to see how it handles splitting 3X in to 1X
-
-                Part r1 = symmetricParts[0];
-                Part r2 = symmetricParts[1];
-                Part r3 = symmetricParts[2];
-
-                PartWizard.CreateSymmetry(r1, new List<Part>());
-                PartWizard.CreateSymmetry(r2, new List<Part>());
-                PartWizard.CreateSymmetry(r3, new List<Part>());
-            }
-
-            Staging.SortIcons();
-        }
-
         public static void CreateSymmetry(Part symmetricRoot, List<Part> counterparts)
         {
             if(symmetricRoot == null)

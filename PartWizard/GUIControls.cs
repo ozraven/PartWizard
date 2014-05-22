@@ -34,6 +34,8 @@ namespace PartWizard
         private static int titleBarButtonCount = 0;
         private static bool layoutStarted = false;
 
+        public static readonly GUIStyle PanelStyle = new GUIStyle("box");
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndLayout")]
         public static void BeginLayout()
         {
@@ -181,6 +183,11 @@ namespace PartWizard
         public static void BeginMouseOverVertical(params GUILayoutOption[] options)
         {
             GUILayout.BeginVertical(options);
+        }
+
+        public static void BeginMouseOverVertical(GUIStyle style, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginVertical(style, options);
         }
 
         public static void EndMouseOverVertical(out bool mouseOver)

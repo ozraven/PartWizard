@@ -48,6 +48,11 @@ namespace PartWizard
 
         private HighlightTracker highlight;
 
+        private static readonly GUIContent RemoveGroupButtonText = new GUIContent(Localized.RemoveGroupButtonText);
+        private static readonly GUIContent MoveDownButtonText = new GUIContent("\\/");
+        private static readonly GUIContent MoveUpButtonText = new GUIContent("/\\");
+        private static readonly GUIContent AddGroupButtonText = new GUIContent(Localized.AddGroupButtonText);
+
         public SymmetryEditorWindow()
             : base(Scene.Editor, new Rect(DefaultX, DefaultY, DefaultWidth, DefaultHeight), "NO PART", "SYMMETRY_EDITOR_WINDOW")
         {
@@ -70,7 +75,7 @@ namespace PartWizard
 
                 if(this.part != null)
                 {
-                    this.Title = string.Format(CultureInfo.CurrentCulture, Localized.SymmetryEditor, this.part.partInfo.title, this.part.partName);
+                    this.Title = Localized.SymmetryEditor;
 
                     this.symmetryGroups.Clear();
 
@@ -80,6 +85,10 @@ namespace PartWizard
                     {
                         this.symmetryGroups.Add(new PartGroup(counterpart));
                     }
+
+#if DEBUG
+                    Log.WriteSymmetryReport(this.part);
+#endif
                 }
                 else
                 {
@@ -103,11 +112,7 @@ namespace PartWizard
             // TODO: Move error failsafe to base class.
             // TODO: Make two renders, one for normal and one for the error mode.
 
-            // TODO: Colors need to be made constants.
-            // TODO: Colorizing needs tweaked: group coloring should be uniform, part coloring should be unique with counterparts the same as group coloring.
             // TODO: Possibly allow customizing each group's color.
-
-            // TODO: Localize user strings.
 
             // TODO: Put a subtle border around each group to help visually separate it from the other groups.
 
@@ -123,23 +128,23 @@ namespace PartWizard
 
                     if(this.mouseOver)
                     {
-                        this.highlight.Add(this.part, Color.cyan, Color.cyan);
+                        this.highlight.Add(this.part, Configuration.HighlightColorSymmetryEditor, Configuration.HighlightColorSymmetryEditor);
                     }
 
                     for(int index = 0; index < this.symmetryGroups.Count; index++)
                     {
                         PartGroup group = this.symmetryGroups[index];
 
-                        GUIControls.BeginMouseOverVertical();
+                        GUIControls.BeginMouseOverVertical(GUIControls.PanelStyle);
 
                         GUILayout.BeginHorizontal();
                         
-                        GUILayout.Label(new GUIContent(string.Format("Group {0}", index + 1)));
+                        GUILayout.Label(new GUIContent(string.Format(CultureInfo.CurrentCulture, Localized.GroupLabelText, index + 1)));
 
                         // Don't allow group removal if there is only one group.
                         GUI.enabled = (this.symmetryGroups.Count > 1);
 
-                        if(GUILayout.Button(new GUIContent("Remove", "Remove group")))
+                        if(GUILayout.Button(SymmetryEditorWindow.RemoveGroupButtonText))
                         {
                             // If there's a group above, use it. If not, then use the one below.
                             PartGroup destinationGroup = (index > 0) ? this.symmetryGroups[index - 1] : this.symmetryGroups[index + 1];
@@ -165,7 +170,7 @@ namespace PartWizard
 
                             GUI.enabled = index < this.symmetryGroups.Count - 1;
 
-                            if(GUILayout.Button(new GUIContent("\\/", "Move Down"), Configuration.PartActionButtonWidth))
+                            if(GUILayout.Button(SymmetryEditorWindow.MoveDownButtonText, Configuration.PartActionButtonWidth))
                             {
                                 PartGroup nextGroup = this.symmetryGroups[index + 1];
 
@@ -176,7 +181,7 @@ namespace PartWizard
 
                             GUI.enabled = index > 0;
 
-                            if(GUILayout.Button(new GUIContent("/\\", "Move Up"), Configuration.PartActionButtonWidth))
+                            if(GUILayout.Button(SymmetryEditorWindow.MoveUpButtonText, Configuration.PartActionButtonWidth))
                             {
                                 PartGroup previousGroup = this.symmetryGroups[index - 1];
 
@@ -192,8 +197,8 @@ namespace PartWizard
 
                             if(mouseOverPartArea)
                             {
-                                this.highlight.Add(group, Color.blue);
-                                this.highlight.Add(groupPart, Color.green);
+                                this.highlight.Add(group, Configuration.HighlightColorCounterparts);
+                                this.highlight.Add(groupPart, Configuration.HighlightColorSinglePart);
 
                                 mouseOverPart = true;
                             }
@@ -204,14 +209,14 @@ namespace PartWizard
 
                         if(!mouseOverPart && groupMouseOver)
                         {
-                            this.highlight.Add(group, Color.magenta);
+                            this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryCounterparts);
                         }
                     }
 
                     // Enable the Add Group button only if there is enough symmetrical parts to fill it.
                     GUI.enabled = (this.symmetryGroups.Count < (this.part.symmetryCounterparts.Count + 1));
 
-                    if(GUILayout.Button(new GUIContent("Add Group")))
+                    if(GUILayout.Button(SymmetryEditorWindow.AddGroupButtonText))
                     {
                         this.symmetryGroups.Add(new PartGroup());
                     }
@@ -224,25 +229,46 @@ namespace PartWizard
 
                     GUILayout.BeginHorizontal();
 
-                    if(GUILayout.Button("OK"))
+                    #region OK Button
+
+                    if(GUILayout.Button(Localized.OK))
                     {
+                        int symmetricGroupsCreated = 0;
+                        int partsProcessed = 0;
+
                         foreach(PartGroup group in this.symmetryGroups)
                         {
                             if(group.Parts.Count > 0)
                             {
+                                partsProcessed += group.Count;
+
                                 Part symmetricRoot = group.Extract(0);
 
                                 PartWizard.CreateSymmetry(symmetricRoot, group.Parts);
+
+                                symmetricGroupsCreated++;
+
+#if DEBUG
+                                Log.WriteSymmetryReport(symmetricRoot);
+#endif
                             }
                         }
 
+                        Log.Write("Modified symmetry for {0}, creating {1} symmetric group(s) from {2} parts.", part.name, symmetricGroupsCreated, partsProcessed);
+                        
                         this.Hide();
                     }
 
-                    if(GUILayout.Button("Cancel"))
+                    #endregion
+
+                    #region Cancel Button
+
+                    if(GUILayout.Button(Localized.Cancel))
                     {
                         this.Hide();
                     }
+
+                    #endregion
 
                     GUILayout.EndHorizontal();
 

@@ -125,12 +125,12 @@
     <value>B</value>
   </data>
   <data name="BreakSymmetryDescription" xml:space="preserve">
-    <value>break symmetry.</value>
+    <value>break/edit symmetry.</value>
   </data>
   <data name="DeletePartButtonText" xml:space="preserve">
     <value>X</value>
   </data>
-  <data name="DeletePartDescription" xml:space="preserve">
+  <data name="DeletePartSingularDescription" xml:space="preserve">
     <value>delete the highlighted part.</value>
   </data>
   <data name="GuiRenderErrorTextFormat" xml:space="preserve">
@@ -161,13 +161,13 @@
     <value>{0} not breakable, not symmetrical</value>
     <comment>{0} = part name</comment>
   </data>
-  <data name="StatusLabelTextFormat" xml:space="preserve">
-    <value>{0} Part(s)</value>
-    <comment>Displayed at the bottom of PartWizardWindow, {0} = part count.</comment>
+  <data name="StatusLabelSingularTextFormat" xml:space="preserve">
+    <value>{0} part.</value>
+    <comment>{0} = part count.</comment>
   </data>
-  <data name="StatusLabelTooltipTextFormat" xml:space="preserve">
-    <value>{0} Part(s), {1}</value>
-    <comment>Displayed at the bottom of PartWizardWindow, {0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
+  <data name="StatusLabelSingularTooltipTextFormat" xml:space="preserve">
+    <value>{0} part, {1}.</value>
+    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
   </data>
   <data name="ViewTypeAll" xml:space="preserve">
     <value>All</value>
@@ -176,7 +176,33 @@
     <value>Hidden</value>
   </data>
   <data name="SymmetryEditor" xml:space="preserve">
-    <value>Symmetry Editor - {0} ({1})</value>
-    <comment>{0} = part display name, {1} = part name</comment>
+    <value>Symmetry Editor</value>
+  </data>
+  <data name="AddGroupButtonText" xml:space="preserve">
+    <value>Add Group</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GroupLabelText" xml:space="preserve">
+    <value>Group {0}</value>
+    <comment>{0} = group number starting at 1</comment>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="RemoveGroupButtonText" xml:space="preserve">
+    <value>Remove Group</value>
+  </data>
+  <data name="StatusLabelPluralTextFormat" xml:space="preserve">
+    <value>{0} parts.</value>
+    <comment>{0} = part count.</comment>
+  </data>
+  <data name="StatusLabelPluralTooltipTextFormat" xml:space="preserve">
+    <value>{0} parts, {1}.</value>
+    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
+  </data>
+  <data name="DeletePartPluralDescription" xml:space="preserve">
+    <value>delete the highlighted parts.</value>
   </data>
 </root>
