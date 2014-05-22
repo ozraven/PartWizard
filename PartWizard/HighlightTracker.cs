@@ -34,7 +34,6 @@ namespace PartWizard
     using Part = global::PartWizard.Test.MockPart;
 #endif
     
-    // TODO: Can interference from other plugins that change highlighting be avoided by tracking our GUI's layers, or by other means?
     internal sealed class HighlightTracker
     {
         #region Global Part Highlight Tracking
@@ -73,26 +72,30 @@ namespace PartWizard
         {
             public class HighlightState
             {
-                public Color HighlightColor;
-                public bool HighlightRecursive;
-
-                public HighlightState(Color highlightColor, bool highlightRecursive)
+                public bool Active;
+                public Part.HighlightType Type;
+                public Color Color;
+                public bool Recursive;
+                
+                public HighlightState(bool active, Part.HighlightType type, Color color, bool recursive)
                 {
-                    this.HighlightColor = highlightColor;
-                    this.HighlightRecursive = highlightRecursive;
+                    this.Active = active;
+                    this.Type = type;
+                    this.Color = color;
+                    this.Recursive = recursive;
                 }
             }
 
             public HighlightState Original;
 
-            public HighlightInfo(Color originalHighlightColor)
-                : this(originalHighlightColor, false)
+            private HighlightInfo(bool originalActive, Part.HighlightType originalType, Color originalColor, bool originalRecursive)
             {
+                this.Original = new HighlightState(originalActive, originalType, originalColor, originalRecursive);
             }
 
-            public HighlightInfo(Color originalHighlightColor, bool originalHighlightRecursive)
+            public static HighlightInfo From(Part part)
             {
-                this.Original = new HighlightState(originalHighlightColor, originalHighlightRecursive);
+                return new HighlightInfo(part.highlightType == Part.HighlightType.AlwaysOn, part.highlightType, part.highlightColor, part.highlightRecurse);
             }
         }
 
@@ -207,7 +210,7 @@ namespace PartWizard
 
                 if(!found)
                 {
-                    HighlightInfo highlightInfo = new HighlightInfo(part.highlightColor, part.highlightRecurse);
+                    HighlightInfo highlightInfo = HighlightInfo.From(part);
 
                     this.Parts.Add(part, highlightInfo);
                 }
@@ -293,9 +296,10 @@ namespace PartWizard
         {
             foreach(KeyValuePair<Part, HighlightInfo> partHighlightInfo in parts)
             {
-                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.HighlightRecursive;
-                partHighlightInfo.Key.SetHighlightColor(partHighlightInfo.Value.Original.HighlightColor);
-                partHighlightInfo.Key.SetHighlight(false);
+                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.Recursive;
+                partHighlightInfo.Key.SetHighlightColor(partHighlightInfo.Value.Original.Color);
+                partHighlightInfo.Key.highlightType = partHighlightInfo.Value.Original.Type;
+                partHighlightInfo.Key.SetHighlight(partHighlightInfo.Value.Original.Active);
             }
         }
     }

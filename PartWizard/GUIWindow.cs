@@ -26,16 +26,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 
 using UnityEngine;
 
+using Localized = PartWizard.Resources.Strings;
+
 namespace PartWizard
 {
-    internal abstract class Window
+    internal abstract class GUIWindow
     {
         private static volatile int NextWindowId = 5000;
-
-        private static readonly Rect DefaultMinimumDimensions = new Rect(0, 0, 250, 400);
 
         private Rect minimumDimensions;
         private Scene scene;
@@ -44,9 +45,10 @@ namespace PartWizard
         protected Rect window;
         private string title;
         private string configurationNodeName;
-        private Window parent;
-        private List<Window> children;
+        private GUIWindow parent;
+        private List<GUIWindow> children;
         protected bool mouseOver;
+        private bool renderError;
 
         private const ControlTypes EditorLockControlTypes = ControlTypes.CAMERACONTROLS
                                                 | ControlTypes.EDITOR_ICON_HOVER
@@ -119,7 +121,7 @@ namespace PartWizard
                 result = Scene.PSYSTEM;
                 break;
             default:
-                throw new ArgumentOutOfRangeException("gameScene", string.Format("Unknown gameScene {0}", gameScene));
+                throw new ArgumentOutOfRangeException("gameScene", string.Format(CultureInfo.InvariantCulture, "Unknown gameScene {0}", gameScene));
             }
 
             return result;
@@ -127,12 +129,7 @@ namespace PartWizard
 
         #endregion
 
-        protected Window(Scene scene, Rect defaultDimensions, string title, string configurationNodeName)
-            : this(scene, defaultDimensions, DefaultMinimumDimensions, title, configurationNodeName)
-        {
-        }
-
-        protected Window(Scene scene, Rect defaultDimensions, Rect minimumDimensions, string title, string configurationNodeName)
+        protected GUIWindow(Scene scene, Rect defaultDimensions, Rect minimumDimensions, string title, string configurationNodeName)
         {
             this.minimumDimensions = minimumDimensions;
             this.windowId = NextWindowId++;
@@ -140,7 +137,9 @@ namespace PartWizard
             this.window = defaultDimensions;
             this.title = title;
             this.configurationNodeName = configurationNodeName;
-            this.children = new List<Window>();
+            this.children = new List<GUIWindow>();
+            this.mouseOver = false;
+            this.renderError = false;
             this.editorLockToken = string.Format(CultureInfo.InvariantCulture, "PartWizard.Window({0})", this.windowId);
             this.editorLocked = false;
         }
@@ -153,16 +152,9 @@ namespace PartWizard
             }
         }
 
-        protected string Title
+        protected void SetTitle(string newTitle)
         {
-            get
-            {
-                return this.title;
-            }
-            set
-            {
-                this.title = value;
-            }
+            this.title = newTitle;
         }
 
         public virtual void Show()
@@ -170,7 +162,7 @@ namespace PartWizard
             this.Show(null);
         }
 
-        public void Show(Window parentWindow)
+        public void Show(GUIWindow parentWindow)
         {
             this.window = Configuration.GetValue(this.configurationNodeName, this.window);
 
@@ -196,7 +188,7 @@ namespace PartWizard
 
             Configuration.Save();
 
-            foreach(Window child in this.children)
+            foreach(GUIWindow child in this.children)
             {
                 child.Hide();
             }
@@ -209,7 +201,7 @@ namespace PartWizard
         {
             // Editor locking logic adapted from m4v's RCSBuildAid.
 
-            Scene loadedScene = Window.SceneFromGameScenes(HighLogic.LoadedScene);
+            Scene loadedScene = GUIWindow.SceneFromGameScenes(HighLogic.LoadedScene);
 
             if((this.scene & loadedScene) == loadedScene)
             {
@@ -219,7 +211,7 @@ namespace PartWizard
 
                     this.window = GUILayout.Window(this.windowId, this.window, this.InternalRender, this.title);
 
-                    foreach(Window child in this.children)
+                    foreach(GUIWindow child in this.children)
                     {
                         child.Render();
                     }
@@ -230,7 +222,7 @@ namespace PartWizard
 
                         if(this.mouseOver && !this.editorLocked)
                         {
-                            InputLockManager.SetControlLock(Window.EditorLockControlTypes, this.editorLockToken);
+                            InputLockManager.SetControlLock(GUIWindow.EditorLockControlTypes, this.editorLockToken);
                             this.editorLocked = true;
                         }
                         else if(!this.mouseOver && this.editorLocked)
@@ -248,7 +240,7 @@ namespace PartWizard
             }
         }
         
-        private void InternalRender(int windowId)
+        private void InternalRender(int renderingWindowId)
         {
             GUIControls.BeginLayout();
 
@@ -262,8 +254,21 @@ namespace PartWizard
                 }
                 else
                 {
-                    this.OnRender();
+                    if(!this.renderError)
+                    {
+                        this.OnRender();
+                    }
+                    else
+                    {
+                        this.OnErrorRender();
+                    }
                 }
+            }
+            catch(Exception)
+            {
+                this.renderError = true;
+
+                throw;
             }
             finally
             {
@@ -272,5 +277,33 @@ namespace PartWizard
         }
 
         public abstract void OnRender();
+
+        protected virtual void OnErrorRender()
+        {
+            GUILayout.BeginVertical();
+
+            GUILayoutOption maxWidth = GUILayout.MaxWidth(this.window.width);
+            GUILayoutOption lockWidth = GUILayout.ExpandWidth(false);
+            GUILayoutOption lockHeight = GUILayout.ExpandHeight(false);
+
+            GUILayoutOption informationLabelMaxHeight = GUILayout.MaxHeight(this.window.height * 0.75f);    // Magically use 3/4ths of the window for the top information label.
+            GUILayout.Label(string.Format(CultureInfo.CurrentCulture, Localized.GuiRenderErrorTextFormat, PartWizardPlugin.Name), maxWidth, informationLabelMaxHeight, lockWidth, lockHeight);
+
+            // Fix up the path for the current environment.
+            string platformCompatibleRootPath = KSPUtil.ApplicationRootPath.Replace('/', Path.DirectorySeparatorChar);
+            // Trim off the extra path components to get the actual KSP root path.
+            string actualRootPath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(platformCompatibleRootPath)));
+            string kspDataPath = Path.Combine(actualRootPath, "KSP_Data");
+            string kspLogFile = Path.Combine(kspDataPath, "output_log.txt");
+
+            GUIStyle textFieldStyle = new GUIStyle();
+            textFieldStyle.wordWrap = true;
+            textFieldStyle.normal.textColor = Color.white;
+
+            GUILayoutOption informationFieldMaxHeight = GUILayout.MaxHeight(this.window.height * 0.25f);    // Magically use 1/4th of the window for the bottom information field.
+            GUILayout.TextField(kspLogFile, textFieldStyle, maxWidth, informationFieldMaxHeight, lockWidth, lockHeight);
+
+            GUILayout.EndVertical();
+        }
     }
 }

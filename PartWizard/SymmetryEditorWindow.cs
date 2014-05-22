@@ -33,13 +33,16 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-    internal sealed class SymmetryEditorWindow : Window
-    {
-        private const float DefaultX = 500;
-        private const float DefaultY = 200;
-        private const float DefaultWidth = 350;
-        private const float DefaultHeight = 400;
+#if TEST
+    using Part = global::PartWizard.Test.MockPart;
+#endif
 
+    internal sealed class SymmetryEditorWindow : GUIWindow
+    {
+        private const float DefaultWidth = 300;
+        private static readonly Rect DefaultDimensions = new Rect(Screen.width - DefaultWidth, 160, DefaultWidth, 400);
+        private static readonly Rect MinimumDimensions = new Rect(0, 0, DefaultDimensions.width, DefaultDimensions.height);
+        
         private Part part;
 
         private Vector2 scrollPosition;
@@ -49,12 +52,12 @@ namespace PartWizard
         private HighlightTracker highlight;
 
         private static readonly GUIContent RemoveGroupButtonText = new GUIContent(Localized.RemoveGroupButtonText);
-        private static readonly GUIContent MoveDownButtonText = new GUIContent("\\/");
-        private static readonly GUIContent MoveUpButtonText = new GUIContent("/\\");
+        private static readonly GUIContent MoveDownButtonText = new GUIContent(Localized.DownButtonSymbol);
+        private static readonly GUIContent MoveUpButtonText = new GUIContent(Localized.UpButtonSymbol);
         private static readonly GUIContent AddGroupButtonText = new GUIContent(Localized.AddGroupButtonText);
 
         public SymmetryEditorWindow()
-            : base(Scene.Editor, new Rect(DefaultX, DefaultY, DefaultWidth, DefaultHeight), "NO PART", "SYMMETRY_EDITOR_WINDOW")
+            : base(Scene.Editor, SymmetryEditorWindow.DefaultDimensions, SymmetryEditorWindow.MinimumDimensions, "NO PART", "SYMMETRY_EDITOR_WINDOW")
         {
             this.highlight = new HighlightTracker();
 
@@ -75,8 +78,6 @@ namespace PartWizard
 
                 if(this.part != null)
                 {
-                    this.Title = Localized.SymmetryEditor;
-
                     this.symmetryGroups.Clear();
 
                     this.symmetryGroups.Add(new PartGroup(this.part));
@@ -109,13 +110,6 @@ namespace PartWizard
 
         public override void OnRender()
         {
-            // TODO: Move error failsafe to base class.
-            // TODO: Make two renders, one for normal and one for the error mode.
-
-            // TODO: Possibly allow customizing each group's color.
-
-            // TODO: Put a subtle border around each group to help visually separate it from the other groups.
-
             if(!error)
             {
                 try

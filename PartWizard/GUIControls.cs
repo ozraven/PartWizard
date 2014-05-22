@@ -180,11 +180,6 @@ namespace PartWizard
             }
         }
 
-        public static void BeginMouseOverVertical(params GUILayoutOption[] options)
-        {
-            GUILayout.BeginVertical(options);
-        }
-
         public static void BeginMouseOverVertical(GUIStyle style, params GUILayoutOption[] options)
         {
             GUILayout.BeginVertical(style, options);

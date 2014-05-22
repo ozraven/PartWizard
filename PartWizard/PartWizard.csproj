@@ -31,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -58,6 +59,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -100,12 +102,13 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="SymmetryEditorWindow.cs" />
     <Compile Include="Test\MockEditorLogic.cs" />
+    <Compile Include="Test\MockGameEvents.cs" />
     <Compile Include="Test\MockIncompleteException.cs" />
     <Compile Include="Test\MockPart.cs" />
     <Compile Include="Test\MockShipConstruct.cs" />
     <Compile Include="Test\MockStaging.cs" />
     <Compile Include="ToolbarWrapper.cs" />
-    <Compile Include="Window.cs" />
+    <Compile Include="GUIWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Strings.resx">

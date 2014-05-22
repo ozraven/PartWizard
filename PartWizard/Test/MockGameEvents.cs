@@ -26,64 +26,34 @@
 #if TEST
 
 using System;
-using System.Collections.Generic;
-
-using UnityEngine;
 
 namespace PartWizard.Test
 {
     [CLSCompliant(false)]
-    public sealed class MockPartInfo
-    {
-        public PartCategories category;
-        public string name;
-        public string title;
-    }
+    public delegate void HostTargetActionHandler<T, S>(MockGameEvents.HostTargetAction<T, S> e);
 
     [CLSCompliant(false)]
-    public abstract class MockPart
+    public class MockGameEvents
     {
-        public enum HighlightType
+        [CLSCompliant(false)]
+        public class HostTargetAction<T, S>
         {
-            Disabled = 0,
-            OnMouseOver = 1,
-            AlwaysOn = 2,
-        }
-        
-        public abstract List<MockPart> children { get; }
-        public abstract string name { get; }
-        public abstract MockPart parent { get; }
-        public abstract List<MockPart> symmetryCounterparts { get; }
-        public abstract int symmetryMode { get; set; }
-        public abstract uint uid { get; }
-        public abstract MockPartInfo partInfo { get; }
-        public abstract Color highlightColor { get; }
-        public abstract bool highlightRecurse { get; set; }
-        public abstract MockPart.HighlightType highlightType { get; set; }
-
-        public abstract void removeChild(MockPart part);
-        public abstract void SetHighlight(bool active);
-        public abstract void SetHighlightColor(Color color);
-
-        public static bool operator ==(MockPart a, MockPart b)
-        {
-            return object.ReferenceEquals(a, b);
+            public T target;
         }
 
-        public static bool operator !=(MockPart a, MockPart b)
+        [CLSCompliant(false)]
+        public class MockEventManager<T, S>
         {
-            return !object.ReferenceEquals(a, b);
+            public void Add(HostTargetActionHandler<T, S> handler)
+            {
+            }
+
+            public void Remove(HostTargetActionHandler<T, S> handler)
+            {
+            }
         }
 
-        public override bool Equals(object obj)
-        {
-            return object.Equals(this, obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        public static MockEventManager<MockPart, MockPart> onPartRemove = new MockEventManager<MockPart, MockPart>();
     }
 }
 

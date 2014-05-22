@@ -88,7 +88,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to break/edit symmetry..
+        ///   Looks up a localized string similar to break symmetry.
         /// </summary>
         internal static string BreakSymmetryDescription {
             get {
@@ -115,7 +115,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to delete the highlighted parts..
+        ///   Looks up a localized string similar to delete highlighted parts.
         /// </summary>
         internal static string DeletePartPluralDescription {
             get {
@@ -124,11 +124,20 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to delete the highlighted part..
+        ///   Looks up a localized string similar to delete highlighted part.
         /// </summary>
         internal static string DeletePartSingularDescription {
             get {
                 return ResourceManager.GetString("DeletePartSingularDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to \/.
+        /// </summary>
+        internal static string DownButtonSymbol {
+            get {
+                return ResourceManager.GetString("DownButtonSymbol", resourceCulture);
             }
         }
         
@@ -264,6 +273,15 @@ namespace PartWizard.Resources {
         internal static string SymmetryEditor {
             get {
                 return ResourceManager.GetString("SymmetryEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /\.
+        /// </summary>
+        internal static string UpButtonSymbol {
+            get {
+                return ResourceManager.GetString("UpButtonSymbol", resourceCulture);
             }
         }
         

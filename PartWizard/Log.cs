@@ -48,28 +48,33 @@ namespace PartWizard
             if(!condition)
             {
                 string message = string.Format(CultureInfo.InvariantCulture, "Assertion failed in {0}.", Log.GetCallingMethod(2));
-
+#endif
 #if TEST
                 throw new Exception(message);
 #endif
-
+#if DEBUG && !TEST
                 Log.Write(message);
+#endif
+#if DEBUG || TEST
             }
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static void Assert(bool condition, string format, params object[] args)
         {
 #if DEBUG || TEST
             if(!condition)
             {
                 string message = string.Format(CultureInfo.InvariantCulture, "Assertion failed in {0}: {1}", Log.GetCallingMethod(2), string.Format(CultureInfo.InvariantCulture, format, args));
-
+#endif
 #if TEST
                 throw new Exception(message);
 #endif
-
+#if DEBUG && !TEST
                 Log.Write(message);
+#endif
+#if DEBUG || TEST
             }
 #endif
         }
@@ -94,11 +99,13 @@ namespace PartWizard
             return string.Concat(method.DeclaringType, ".", method.Name);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static string Format(Rect rect)
         {
             return string.Format(CultureInfo.InvariantCulture, "[({0}, {1}) {2}x{3}]", (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static string FormatInt32(Vector2 vector)
         {
             return string.Format(CultureInfo.InvariantCulture, "({0}, {1})", (int)vector.x, (int)vector.y);
@@ -127,13 +134,6 @@ namespace PartWizard
 
             return result;
         }
-
-        // TODO: PartWizardWindow doesn't seem to be saving/restoring window location properly.
-        // TODO: Test to make sure windows appear in sane places when starting without a .cfg file.
-        // TODO: Left justify status bar text.
-        // TODO: Status bar text needs shorter/window needs wider because getting string truncating on most every message.
-        // TODO: Clicking Break Symmetry button toggles the Symmetry Editor window; it should open it if hidden, or just switch parts if it is visible.
-        // TODO: Test for highlighting problems when in AG mode.
 
         public static void WriteSymmetryReport(Part part)
         {

@@ -27,10 +27,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-using KSP;
-
-using UnityEngine;
-
 using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
@@ -99,48 +95,6 @@ namespace PartWizard
             return result;
         }
 #endif
-
-        /// <summary>
-        /// Breaks the symmetry of a part and all of its child parts.
-        /// </summary>
-        /// <param name="part">The part with symmetry to break.</param>
-        public static void BreakSymmetry(Part part)
-        {
-            if(part == null)
-                throw new ArgumentNullException("part");
-
-            Part symmetryRootPart = PartWizard.FindSymmetryRoot(part);
-
-            // Get the prototype part's list of symmetry counterparts because each of them needs updated to break
-            // symmetry.
-            List<Part> counterparts = symmetryRootPart.symmetryCounterparts;
-
-            // Begin breaking symmetry on each counterpart:
-            foreach(Part counterpart in counterparts)
-            {
-                // Clear the properties that declare symmetry.
-                counterpart.symmetryMode = 0;
-                counterpart.symmetryCounterparts.Clear();
-
-                // We must break symmetry on all children too, because otherwise the editor will be confused and let the user do
-                // some odd things with part placement involving the parts that still have symmetry.
-                foreach(Part childPart in counterpart.children)
-                {
-                    PartWizard.BreakSymmetry(childPart);
-                }
-            }
-
-            // Now break symmetry on the symmetry root part and all if it's children.
-            symmetryRootPart.symmetryCounterparts.Clear();
-
-            foreach(Part childPart in symmetryRootPart.children)
-            {
-                PartWizard.BreakSymmetry(childPart);
-            }
-
-            // Finally, poke the staging logic to sort out any changes due to breaking the symmetry of this part.
-            Staging.SortIcons();
-        }
 
         public static void CreateSymmetry(Part symmetricRoot, List<Part> counterparts)
         {
