@@ -34,6 +34,9 @@ namespace PartWizard
     using Part = global::PartWizard.Test.MockPart;
 #endif
 
+    /// <summary>
+    /// A collection of parts with some convenient methods for managing several PartGroup objects.
+    /// </summary>
     internal class PartGroup
     {
         public readonly List<Part> Parts;

@@ -34,10 +34,17 @@ namespace PartWizard
     using Part = global::PartWizard.Test.MockPart;
 #endif
     
+    /// <summary>
+    /// A class for modifying and restoring the state of globally shared resource, such as the highlighting state of Part objects, in this case.
+    /// </summary>
     internal sealed class HighlightTracker
     {
         #region Global Part Highlight Tracking
 
+        /// <summary>
+        /// Simple generic class for managing two of the same type of object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         private class Pair<T> where T : new()
         {
             public T Left;
@@ -63,13 +70,21 @@ namespace PartWizard
             }
         }
 
-        private static int nextInstance = 0;
+        private static int nextInstance = 0;    // Automatically incremented each time an instance of this class is created.
+
+        // A global dictionary of parts sorted by HighlightTracker instance.
         private static Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>>();
 
         #endregion
 
+        /// <summary>
+        /// Highlighting information for a part.
+        /// </summary>
         private class HighlightInfo
         {
+            /// <summary>
+            /// The highlighting state of a part.
+            /// </summary>
             public class HighlightState
             {
                 public bool Active;
