@@ -264,9 +264,12 @@ namespace PartWizard
                     }
                 }
             }
-            catch(Exception)
+            catch(Exception e)
             {
                 this.renderError = true;
+
+                Log.Trace("Window rendering error, details follow:");
+                Debug.LogException(e);
 
                 throw;
             }

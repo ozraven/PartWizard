@@ -190,6 +190,8 @@ namespace PartWizard
 
             if(!this.Parts.ContainsKey(part) && this.PreviousParts.ContainsKey(part))
             {
+                // This part was previously tracked, so move it to the current set.
+
                 HighlightInfo highlightInfo = this.PreviousParts[part];
 
                 this.PreviousParts.Remove(part);
@@ -198,6 +200,8 @@ namespace PartWizard
             }
             if(!this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
             {
+                // This part wasn't previously tracked by this instance. Look for it in the master set and move it to the current set if found.
+
                 bool found = false;
 
                 foreach(var globalParts in HighlightTracker.instanceParts)
@@ -223,6 +227,7 @@ namespace PartWizard
                     }
                 }
 
+                // The part wasn't found, store the current (original) highlight state and add it to the current set.
                 if(!found)
                 {
                     HighlightInfo highlightInfo = HighlightInfo.From(part);
@@ -231,9 +236,10 @@ namespace PartWizard
                 }
             }
             
-            // We should have it!
+            // The part should be in the current set by this point.
             Log.Assert(this.Parts.ContainsKey(part));
 
+            // Update the part with the requested settings.
             part.highlightRecurse = recursive;
             part.SetHighlightColor(color);
         }
@@ -270,6 +276,10 @@ namespace PartWizard
             this.Add(group, color, false);
         }
 
+        /// <summary>
+        /// Finalizes the tracking actions. All parts in the current set are activated for highlighting. All parts in the previous set are restored to their original
+        /// state. The current set becomes the previous set and the previous set is emptied and recycled to become the next current set.
+        /// </summary>
         public void EndTracking()
         {
             if(!tracking)
@@ -289,6 +299,9 @@ namespace PartWizard
             this.tracking = false;
         }
 
+        /// <summary>
+        /// Cancels the current tracking operation. The current set and previous set are cleared and all parts are restored to their original states.
+        /// </summary>
         public void CancelTracking()
         {
             this.tracking = false;

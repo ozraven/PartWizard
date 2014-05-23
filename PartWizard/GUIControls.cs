@@ -35,6 +35,7 @@ namespace PartWizard
         private static bool layoutStarted = false;
 
         public static readonly GUIStyle PanelStyle = new GUIStyle("box");
+        public static readonly GUILayoutOption LockWidth = GUILayout.ExpandWidth(false);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndLayout")]
         public static void BeginLayout()
@@ -145,29 +146,20 @@ namespace PartWizard
 
             return result;
         }
-
-        //public static Vector2 BeginMouseOverScrollView(Vector2 scrollPosition, bool alwaysShowHorizontal, bool alwaysShowVertical, params GUILayout[] options)
-        //{
-        //    return GUILayout.BeginScrollView(scrollPosition, alwaysShowHorizontal, alwaysShowVertical, options);
-        //}
-
-        //public static void EndMouseOverScrollView(out bool mouseOver)
-        //{
-        //    mouseOver = false;
-
-        //    GUILayout.EndScrollView();
-
-        //    if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
-        //    {
-        //        mouseOver = true;
-        //    }
-        //}
-
+        
+        /// <summary>
+        /// Provides a horizontal GUI layout area that can detect if the mouse is within its area.
+        /// </summary>
+        /// <param name="options">The usual GUILayoutOption parameters, see Unity documentation.</param>
         public static void BeginMouseOverHorizontal(params GUILayoutOption[] options)
         {
             GUILayout.BeginHorizontal(options);
         }
 
+        /// <summary>
+        /// Completes a horizontal GUI layout area started by <see cref="BeginMouseOverHorizontal"/>.
+        /// </summary>
+        /// <param name="mouseOver">Set to true if the mouse is over this area; false if not.</param>
         public static void EndMouseOverHorizontal(out bool mouseOver)
         {
             mouseOver = false;
@@ -197,15 +189,15 @@ namespace PartWizard
             }
         }
 
+        /// <summary>
+        /// Determines if the mouse is over the specified window.
+        /// </summary>
+        /// <param name="window">The Rect of the window to check for mouse over status.</param>
+        /// <returns>True if the mouse cursor is within the windows boundaries; false if not.</returns>
         public static bool MouseOverWindow(ref Rect window)
         {
             bool result = false;
 
-            //if(Event.current.type == EventType.Repaint && Event.current.mousePosition.x >= 0 && Event.current.mousePosition.x < window.width &&
-            //    Event.current.mousePosition.y >= 0 && Event.current.mousePosition.y < window.height)
-            //{
-            //    result = true;
-            //}
             if(Event.current.type == EventType.Repaint && Event.current.mousePosition.x >= window.x && Event.current.mousePosition.x < window.x + window.width &&
                 Event.current.mousePosition.y >= window.y && Event.current.mousePosition.y < window.y + window.height)
             {

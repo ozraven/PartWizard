@@ -106,188 +106,181 @@ namespace PartWizard
             base.Hide();
         }
 
-        bool error = false;
-
         public override void OnRender()
         {
-            if(!error)
+            try
             {
-                try
+                GUILayout.BeginVertical();
+
+                this.scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
+
+                this.highlight.BeginTracking();
+
+                if(this.mouseOver)
                 {
-                    GUILayout.BeginVertical();
+                    this.highlight.Add(this.part, Configuration.HighlightColorSymmetryEditor, Configuration.HighlightColorSymmetryEditor);
+                }
 
-                    this.scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
+                for(int index = 0; index < this.symmetryGroups.Count; index++)
+                {
+                    PartGroup group = this.symmetryGroups[index];
 
-                    this.highlight.BeginTracking();
+                    GUIControls.BeginMouseOverVertical(GUIControls.PanelStyle);
 
-                    if(this.mouseOver)
+                    GUILayout.BeginHorizontal();
+                        
+                    GUILayout.Label(new GUIContent(string.Format(CultureInfo.CurrentCulture, Localized.GroupLabelText, index + 1)));
+
+                    // Don't allow group removal if there is only one group.
+                    GUI.enabled = (this.symmetryGroups.Count > 1);
+
+                    if(GUILayout.Button(SymmetryEditorWindow.RemoveGroupButtonText))
                     {
-                        this.highlight.Add(this.part, Configuration.HighlightColorSymmetryEditor, Configuration.HighlightColorSymmetryEditor);
+                        // If there's a group above, use it. If not, then use the one below.
+                        PartGroup destinationGroup = (index > 0) ? this.symmetryGroups[index - 1] : this.symmetryGroups[index + 1];
+
+                        destinationGroup.MergeFrom(group);
+
+                        this.symmetryGroups.Remove(group);
+
+                        break;
                     }
 
-                    for(int index = 0; index < this.symmetryGroups.Count; index++)
-                    {
-                        PartGroup group = this.symmetryGroups[index];
-
-                        GUIControls.BeginMouseOverVertical(GUIControls.PanelStyle);
-
-                        GUILayout.BeginHorizontal();
+                    GUILayout.EndHorizontal();
                         
-                        GUILayout.Label(new GUIContent(string.Format(CultureInfo.CurrentCulture, Localized.GroupLabelText, index + 1)));
+                    GUI.enabled = true;
 
-                        // Don't allow group removal if there is only one group.
-                        GUI.enabled = (this.symmetryGroups.Count > 1);
+                    bool mouseOverPart = false;
 
-                        if(GUILayout.Button(SymmetryEditorWindow.RemoveGroupButtonText))
+                    foreach(Part groupPart in group.Parts)
+                    {
+                        GUIControls.BeginMouseOverHorizontal();
+
+                        GUILayout.Label(new GUIContent(groupPart.partInfo.title));
+
+                        GUI.enabled = index < this.symmetryGroups.Count - 1;
+
+                        if(GUILayout.Button(SymmetryEditorWindow.MoveDownButtonText, Configuration.PartActionButtonWidth))
                         {
-                            // If there's a group above, use it. If not, then use the one below.
-                            PartGroup destinationGroup = (index > 0) ? this.symmetryGroups[index - 1] : this.symmetryGroups[index + 1];
+                            PartGroup nextGroup = this.symmetryGroups[index + 1];
 
-                            destinationGroup.MergeFrom(group);
-
-                            this.symmetryGroups.Remove(group);
+                            group.MoveTo(groupPart, nextGroup);
 
                             break;
                         }
 
-                        GUILayout.EndHorizontal();
-                        
+                        GUI.enabled = index > 0;
+
+                        if(GUILayout.Button(SymmetryEditorWindow.MoveUpButtonText, Configuration.PartActionButtonWidth))
+                        {
+                            PartGroup previousGroup = this.symmetryGroups[index - 1];
+
+                            group.MoveTo(groupPart, previousGroup);
+
+                            break;
+                        }
+
                         GUI.enabled = true;
 
-                        bool mouseOverPart = false;
+                        bool mouseOverPartArea = false;
+                        GUIControls.EndMouseOverVertical(out mouseOverPartArea);
 
-                        foreach(Part groupPart in group.Parts)
+                        if(mouseOverPartArea)
                         {
-                            GUIControls.BeginMouseOverHorizontal();
+                            this.highlight.Add(group, Configuration.HighlightColorCounterparts);
+                            this.highlight.Add(groupPart, Configuration.HighlightColorSinglePart);
 
-                            GUILayout.Label(new GUIContent(groupPart.partInfo.title));
-
-                            GUI.enabled = index < this.symmetryGroups.Count - 1;
-
-                            if(GUILayout.Button(SymmetryEditorWindow.MoveDownButtonText, Configuration.PartActionButtonWidth))
-                            {
-                                PartGroup nextGroup = this.symmetryGroups[index + 1];
-
-                                group.MoveTo(groupPart, nextGroup);
-
-                                break;
-                            }
-
-                            GUI.enabled = index > 0;
-
-                            if(GUILayout.Button(SymmetryEditorWindow.MoveUpButtonText, Configuration.PartActionButtonWidth))
-                            {
-                                PartGroup previousGroup = this.symmetryGroups[index - 1];
-
-                                group.MoveTo(groupPart, previousGroup);
-
-                                break;
-                            }
-
-                            GUI.enabled = true;
-
-                            bool mouseOverPartArea = false;
-                            GUIControls.EndMouseOverVertical(out mouseOverPartArea);
-
-                            if(mouseOverPartArea)
-                            {
-                                this.highlight.Add(group, Configuration.HighlightColorCounterparts);
-                                this.highlight.Add(groupPart, Configuration.HighlightColorSinglePart);
-
-                                mouseOverPart = true;
-                            }
-                        }
-
-                        bool groupMouseOver = false;
-                        GUIControls.EndMouseOverVertical(out groupMouseOver);
-
-                        if(!mouseOverPart && groupMouseOver)
-                        {
-                            this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryCounterparts);
+                            mouseOverPart = true;
                         }
                     }
 
-                    // Enable the Add Group button only if there is enough symmetrical parts to fill it.
-                    GUI.enabled = (this.symmetryGroups.Count < (this.part.symmetryCounterparts.Count + 1));
+                    bool groupMouseOver = false;
+                    GUIControls.EndMouseOverVertical(out groupMouseOver);
 
-                    if(GUILayout.Button(SymmetryEditorWindow.AddGroupButtonText))
+                    if(!mouseOverPart && groupMouseOver)
                     {
-                        this.symmetryGroups.Add(new PartGroup());
+                        this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryCounterparts);
                     }
+                }
 
-                    GUI.enabled = true;
+                // Enable the Add Group button only if there is enough symmetrical parts to fill it.
+                GUI.enabled = (this.symmetryGroups.Count < (this.part.symmetryCounterparts.Count + 1));
 
-                    GUILayout.EndScrollView();
+                if(GUILayout.Button(SymmetryEditorWindow.AddGroupButtonText))
+                {
+                    this.symmetryGroups.Add(new PartGroup());
+                }
 
-                    GUILayout.Space(4);
+                GUI.enabled = true;
 
-                    GUILayout.BeginHorizontal();
+                GUILayout.EndScrollView();
 
-                    #region OK Button
+                GUILayout.Space(4);
 
-                    if(GUILayout.Button(Localized.OK))
+                GUILayout.BeginHorizontal();
+
+                #region OK Button
+
+                if(GUILayout.Button(Localized.OK))
+                {
+                    int symmetricGroupsCreated = 0;
+                    int partsProcessed = 0;
+
+                    foreach(PartGroup group in this.symmetryGroups)
                     {
-                        int symmetricGroupsCreated = 0;
-                        int partsProcessed = 0;
-
-                        foreach(PartGroup group in this.symmetryGroups)
+                        if(group.Parts.Count > 0)
                         {
-                            if(group.Parts.Count > 0)
-                            {
-                                partsProcessed += group.Count;
+                            partsProcessed += group.Count;
 
-                                Part symmetricRoot = group.Extract(0);
+                            Part symmetricRoot = group.Extract(0);
 
-                                PartWizard.CreateSymmetry(symmetricRoot, group.Parts);
+                            PartWizard.CreateSymmetry(symmetricRoot, group.Parts);
 
-                                symmetricGroupsCreated++;
+                            symmetricGroupsCreated++;
 
 #if DEBUG
-                                Log.WriteSymmetryReport(symmetricRoot);
+                            Log.WriteSymmetryReport(symmetricRoot);
 #endif
-                            }
                         }
+                    }
 
-                        Log.Write("Modified symmetry for {0}, creating {1} symmetric group(s) from {2} parts.", part.name, symmetricGroupsCreated, partsProcessed);
+                    Log.Write("Modified symmetry for {0}, creating {1} symmetric group(s) from {2} parts.", part.name, symmetricGroupsCreated, partsProcessed);
                         
-                        this.Hide();
-                    }
-
-                    #endregion
-
-                    #region Cancel Button
-
-                    if(GUILayout.Button(Localized.Cancel))
-                    {
-                        this.Hide();
-                    }
-
-                    #endregion
-
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.EndVertical();
+                    this.Hide();
                 }
-                catch(Exception e)
-                {
-                    error = true;
 
-                    Debug.LogException(e);
-                    
-                    throw;
+                #endregion
+
+                #region Cancel Button
+
+                if(GUILayout.Button(Localized.Cancel))
+                {
+                    this.Hide();
                 }
-                finally
-                {
-                    GUI.DragWindow();
 
-                    if(!error && this.visible && this.mouseOver)
-                    {
-                        this.highlight.EndTracking();
-                    }
-                    else
-                    {
-                        this.highlight.CancelTracking();
-                    }
+                #endregion
+
+                GUILayout.EndHorizontal();
+
+                GUILayout.EndVertical();
+            }
+            catch(Exception)
+            {
+                highlight.CancelTracking();
+
+                throw;
+            }
+            finally
+            {
+                GUI.DragWindow();
+
+                if(this.visible && this.mouseOver)
+                {
+                    this.highlight.EndTracking();
+                }
+                else
+                {
+                    this.highlight.CancelTracking();
                 }
             }
         }

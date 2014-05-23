@@ -161,8 +161,17 @@ namespace PartWizard
                     PartWizard.CreateSymmetry(child, childSymmetricCounterparts);
                 }
             }
+
+            // Poke the staging logic to sort out any changes due to modifying the symmetry of this part.
+            Staging.SortIcons();
         }
 
+        /// <summary>
+        /// Determines if a part is a symmetric sibling.
+        /// </summary>
+        /// <param name="part">The part to test for being a symmetric sibling</param>
+        /// <param name="family">The part containing symmetric siblings to be searched.</param>
+        /// <returns>True if part is found within family.symmetryCounterparts.</returns>
         public static bool IsSibling(Part part, Part family)
         {
             if(part == null)

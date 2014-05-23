@@ -34,6 +34,13 @@ namespace PartWizard
         // Example partwizard.cfg:
         // PART_WIZARD_SETTINGS
         // {
+        //     SYMMETRY_EDITOR_WINDOW
+        //     {
+        //         x = 275
+        //         y = 25
+        //         width = 250
+        //         height = 400
+        //     }
         //     PART_WIZARD_WINDOW
         //     {
         //         x = 25
@@ -44,8 +51,6 @@ namespace PartWizard
         //
         //     toolbarIconActive = PartWizard/Icons/partwizard_active_toolbar_24_icon
         //     toolbarIconInactive = PartWizard/Icons/partwizard_inactive_toolbar_24_icon
-        //
-        //     toggleHotkey = Alt-P,W
         // }
 
         private const string File = "GameData/PartWizard/partwizard.cfg";

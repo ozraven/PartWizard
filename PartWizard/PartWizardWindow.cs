@@ -67,9 +67,7 @@ namespace PartWizard
         private GUIStyle unselectedViewTypeStyle;
 
         private GUIContent[] viewTypeContents;
-
-        //private bool renderError = false;
-
+        
         private SymmetryEditorWindow symmetryEditorWindow;
 
         public PartWizardWindow(string name, string version)
@@ -288,9 +286,6 @@ namespace PartWizard
             }
             catch(Exception e)
             {
-                Log.Trace("Window rendering error, details follow:");
-                Debug.LogException(e);
-
                 this.highlight.CancelTracking();
 
                 throw;
@@ -299,7 +294,6 @@ namespace PartWizard
             {
                 GUI.DragWindow();
 
-                //if(!this.renderError && this.visible && this.mouseOver)
                 if(this.visible && this.mouseOver)
                 {
                     this.highlight.EndTracking();
