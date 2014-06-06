@@ -1,5 +1,5 @@
 ﻿Part Wizard Plugin for Kerbal Space Program
-Version 1.0.0.0
+Version 1.1.0.0
 
 1. Features
 2. Requirements
@@ -8,7 +8,7 @@ Version 1.0.0.0
    a. Part List Overview
    b. View Mode
    c. Deleting Parts
-   d. Breaking Symmetry
+   d. Editing Symmetry
    e. Undoing an Operation
 5. Copyright and Licensing Information
 
@@ -16,11 +16,11 @@ Version 1.0.0.0
 
 * Provides a list of parts with part highlighting for easier identification.
 * Allows deleting of parts from the list on eligible[1] parts.
-* Allows "breaking" of symmetry[2] on eligible[3] parts.
+* Allows editing of symmetry[2] on eligible[3] parts.
 * Shows either all parts or only those that are hidden from the editor's Parts List.
 
 [1] Parts eligible for deleting via Part Wizard are those that are not the "root" part and have no attached parts.
-[2] Symmetry is broken on the designated part, its counter parts and all symmetrical child parts.
+[2] Symmetry editing modifies the designated part, its counter parts and all symmetrical child parts.
 [3] Parts eligible for "breaking" of symmetry must not include the "root" part as a counterpart or as a child part. 
 
 2. Requirements
@@ -37,7 +37,7 @@ The Part Wizard toolbar icon is only available in the Vehicle Assembly Building 
 
     a. Part List Overview
 
-	The Part Wizard interface presents a list of parts that currently make up your vehicle. Mousing over each part on the list will highlight the part within the editor. At the bottom of the window is a status area that always shows the current total part count and, when mousing over a part, will show that part's internal name.
+	The Part Wizard interface presents a list of parts that currently make up your vehicle. Mousing over each part on the list will highlight the part green. Parts with symmetry will also be highlighted green, and all counterparts will be highlighted in yellow. At the bottom of the window is a status area that always shows the current total part count and, when mousing over a part, will show that part's internal name.
 
 	b. View Mode
 
@@ -47,9 +47,9 @@ The Part Wizard toolbar icon is only available in the Vehicle Assembly Building 
 
 	Each active part in the Part Wizard list has a small button (labelled with a "X"). When this button is enabled, a part may be deleted by clicking the associated "X" button. The part will be removed immediately. If the part intended for deletion is symmetrical with other parts, ALL of its counterparts will also be deleted. (If this is not intended, see Breaking Symmetry, below.)
 
-	d. Breaking Symmetry
+	d. Editing Symmetry
 
-	Each active part in the Part Wizard list has a small button (labelled with a "B"). When this button is enabled, a part's symmetry may be broken by clicking the associated "B" button. The part, all of its counterparts, and all symmetrical child parts will be converted to non-symmetrical parts and can then be manipulated as individual parts. When the Break Symmetry feature is not available for a part, it is likely that the part or one of its related parts has been made the "root" part in some way. Note that non-symmetrical child parts are ignored by the Break Symmetry feature and will not be modified.
+	Each active part in the Part Wizard list has a small button (labelled with a "B"). When this button is enabled, a part's symmetry may be edited by clicking the associated "B" button. The Symmetry Editor window will appear. Mousing over this window will highlight the relevant parts in cyan, and by default each counterpart will be automatically placed in a group. Clicking OK at this point will "break" symmetry for each part, all of its counterparts, and all symmetrical child parts will be converted to non-symmetrical parts and can be manipulated indvidually. However, parts can be moved between groups, groups can be removed and created. Clicking OK will apply the relevant changes, where groups with one part will be symmetrically "broken" and groups with more than one part will have a unique symmetry created for those parts. Note that non-symmetrical child parts are ignored by the Break Symmetry feature and will not be modified.
 
 	e. Undoing an Operation
 
