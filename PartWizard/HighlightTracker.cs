@@ -324,10 +324,10 @@ namespace PartWizard
         {
             foreach(KeyValuePair<Part, HighlightInfo> partHighlightInfo in parts)
             {
-                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.Recursive;
                 partHighlightInfo.Key.SetHighlightColor(partHighlightInfo.Value.Original.Color);
                 partHighlightInfo.Key.highlightType = partHighlightInfo.Value.Original.Type;
                 partHighlightInfo.Key.SetHighlight(partHighlightInfo.Value.Original.Active);
+                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.Recursive;
             }
         }
     }
