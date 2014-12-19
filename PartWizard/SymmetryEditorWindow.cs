@@ -49,7 +49,7 @@ namespace PartWizard
 
         private List<PartGroup> symmetryGroups;
 
-        private HighlightTracker highlight;
+        private IHighlightTracker highlight;
 
         private static readonly GUIContent RemoveGroupButtonText = new GUIContent(Localized.RemoveGroupButtonText);
         private static readonly GUIContent MoveDownButtonText = new GUIContent(Localized.DownButtonSymbol);

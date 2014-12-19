@@ -68,7 +68,7 @@ namespace PartWizard
                     this.partWizardToolbarButton = ToolbarManager.Instance.add("PartWizardNS", "partWizardButton");
                     this.partWizardToolbarButton.ToolTip = PartWizardPlugin.Name;
                     this.partWizardToolbarButton.OnClick += this.partWizardButton_Click;
-                    this.partWizardToolbarButton.Visibility = new GameScenesVisibility(GameScenes.EDITOR, GameScenes.SPH);
+                    this.partWizardToolbarButton.Visibility = new GameScenesVisibility(GameScenes.EDITOR);
 
                     this.UpdateToolbarIcon();
                 }

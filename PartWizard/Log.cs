@@ -143,16 +143,16 @@ namespace PartWizard
             Log.Write("SYMMETRY REPORT FOR {0}", r.name);
             Log.Write("Root:");
             Log.Write("\tname = {0}", r.name);
-            Log.Write("\tuid = {0}", r.uid);
-            Log.Write("\tsymmetryMode = {0}", r.symmetryMode);
+            Log.Write("\tsymMethod = {0}", r.symMethod);
+            Log.Write("\tstackSymmetry = {0}", r.stackSymmetry);
             Log.Write("Counterparts:");
             for(int index = 0; index < r.symmetryCounterparts.Count; index++)
             {
                 Part c = r.symmetryCounterparts[index];
 
                 Log.Write("\t{0} name = {1}", index, c.name);
-                Log.Write("\t{0} uid = {1}", index, c.uid);
-                Log.Write("\t{0} symmetryMode = {1}", index, c.symmetryMode);
+                Log.Write("\t{0} symMethod = {1}", index, c.symMethod);
+                Log.Write("\t{0} stackSymmetry = {1}", index, c.stackSymmetry);
                 Log.Write("\t{0} children = {1}", index, c.children.Count);
             }
             Log.Write("END OF REPORT");

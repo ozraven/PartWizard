@@ -74,6 +74,7 @@ namespace PartWizard
         public static readonly Color HighlightColorRootPart = Color.blue;
         public static readonly Color HighlightColorSymmetryEditor = Color.cyan;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static Configuration()
         {
             if(Configuration.Root.GetNode(Configuration.SettingsNodeName) == null)

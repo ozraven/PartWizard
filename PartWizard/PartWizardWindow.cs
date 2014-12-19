@@ -53,7 +53,7 @@ namespace PartWizard
         
         private Vector2 scrollPosition;
 
-        private HighlightTracker highlight;
+        private IHighlightTracker highlight;
 
         private enum ViewType
         {
@@ -235,7 +235,7 @@ namespace PartWizard
                     }
                     else if(groupMouseOver)
                     {
-                        Color highlightColor = (part.uid != EditorLogic.startPod.uid) ? Configuration.HighlightColorSinglePart : Configuration.HighlightColorRootPart;
+                        Color highlightColor = (part == EditorLogic.RootPart) ? Configuration.HighlightColorRootPart : Configuration.HighlightColorSinglePart;
 
                         this.highlight.Add(part, highlightColor, Configuration.HighlightColorCounterparts, false);
                     }
@@ -284,7 +284,7 @@ namespace PartWizard
 
                 GUILayout.EndVertical();
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 this.highlight.CancelTracking();
 

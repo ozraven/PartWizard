@@ -58,14 +58,11 @@ namespace PartWizard
             Part parent = part.parent;
             parent.removeChild(part);
 
-            // Second, get the editor and ask it to destroy the part.
-            EditorLogic editor = EditorLogic.fetch;
-            editor.PartSelected = part;
-            editor.DestroySelectedPart();
+            // Second, do the creepy stalker way of forcing EditorLogic to change the selected part.
+            EditorLogic.fetch.OnSubassemblyDialogDismiss(part);
 
-            // Third, since the part is now dead, clear the selected part.
-            // TODO: Test to see if this is necessary.
-            editor.PartSelected = null;
+            // Third, ask the editor to destroy the part, which requires the part to have been selected previously.
+            EditorLogic.DeletePart(part);
 
             // Finally, poke the staging logic to sort out any changes due to deleting this part.
             Staging.SortIcons();
@@ -77,22 +74,10 @@ namespace PartWizard
             if(part == null)
                 throw new ArgumentNullException("part");
 
-            Part result = part;
+            // In KSP 0.90 it appears that the concept of root symmetry has been removed, so simply return the part - it is as much the root
+            // symmetry part as any of the counterparts.
 
-            // If we don't have the symmetry root part, we need to find it.
-            if(result.symmetryMode != 0)
-            {
-                foreach(Part counterpart in result.symmetryCounterparts)
-                {
-                    if(counterpart.symmetryMode == 0)
-                    {
-                        result = counterpart;
-                        break;
-                    }
-                }
-            }
-
-            return result;
+            return part;
         }
 #endif
 
@@ -104,12 +89,9 @@ namespace PartWizard
             if(counterparts == null)
                 throw new ArgumentNullException("counterparts");
 
-            // The symmetric root's symmetryMode is always zero.
-            symmetricRoot.symmetryMode = 0;
-
-            // symmetryMode appears to be set to the number of counterparts.
-            int prelinarySymmetryMode = counterparts.Count;
-
+            // The symmetric root's method is always radial.
+            symmetricRoot.symMethod = SymmetryMethod.Radial;
+            
             // Clear out the current list of counterparts, we'll recreate this as we go along.
             symmetricRoot.symmetryCounterparts.Clear();
             
@@ -120,12 +102,10 @@ namespace PartWizard
 
                 // Each counterpart must be added to the symmetric root's list.
                 symmetricRoot.symmetryCounterparts.Add(counterpart);
-                
                 // Clear the counterpart's list.
                 counterpart.symmetryCounterparts.Clear();
-                // Set the appropriate symmetry mode.
-                counterpart.symmetryMode = prelinarySymmetryMode;
-
+                // Set the appropriate symmetry method.
+                counterpart.symMethod = SymmetryMethod.Radial;
                 // Add the symmetrical root part as a counterpart.
                 counterpart.symmetryCounterparts.Add(symmetricRoot);
                 
@@ -301,8 +281,8 @@ namespace PartWizard
             bool result = false;
 
             if(part.parent != null)
-            {
-                if(!(result = (part.uid == possibleAncestor.uid)))
+            {                
+                if(!(result = (part == possibleAncestor)))
                 {
                     result = PartWizard.IsAncestor(part.parent, possibleAncestor);
                 }
@@ -323,7 +303,7 @@ namespace PartWizard
 
             foreach(Part childPart in part.children)
             {
-                if(childPart.uid == possibleDescendant.uid)
+                if(childPart == possibleDescendant)
                 {
                     result = true;
                     break;

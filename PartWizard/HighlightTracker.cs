@@ -37,7 +37,7 @@ namespace PartWizard
     /// <summary>
     /// A class for modifying and restoring the state of globally shared resource, such as the highlighting state of Part objects, in this case.
     /// </summary>
-    internal sealed class HighlightTracker
+    internal sealed class HighlightTracker : IHighlightTracker
     {
         #region Global Part Highlight Tracking
 
@@ -73,53 +73,16 @@ namespace PartWizard
         private static int nextInstance = 0;    // Automatically incremented each time an instance of this class is created.
 
         // A global dictionary of parts sorted by HighlightTracker instance.
-        private static Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, HighlightInfo>>>();
+        private static Dictionary<int, Pair<List<Part>>> instanceParts = new Dictionary<int, Pair<List<Part>>>();
 
         #endregion
-
-        /// <summary>
-        /// Highlighting information for a part.
-        /// </summary>
-        private class HighlightInfo
-        {
-            /// <summary>
-            /// The highlighting state of a part.
-            /// </summary>
-            public class HighlightState
-            {
-                public bool Active;
-                public Part.HighlightType Type;
-                public Color Color;
-                public bool Recursive;
-                
-                public HighlightState(bool active, Part.HighlightType type, Color color, bool recursive)
-                {
-                    this.Active = active;
-                    this.Type = type;
-                    this.Color = color;
-                    this.Recursive = recursive;
-                }
-            }
-
-            public HighlightState Original;
-
-            private HighlightInfo(bool originalActive, Part.HighlightType originalType, Color originalColor, bool originalRecursive)
-            {
-                this.Original = new HighlightState(originalActive, originalType, originalColor, originalRecursive);
-            }
-
-            public static HighlightInfo From(Part part)
-            {
-                return new HighlightInfo(part.highlightType == Part.HighlightType.AlwaysOn, part.highlightType, part.highlightColor, part.highlightRecurse);
-            }
-        }
 
         private int instance;
         private volatile bool tracking;
 
         #region Private Logic Simplifiers
 
-        private Dictionary<Part, HighlightInfo> Parts
+        private List<Part> Parts
         {
             get
             {
@@ -127,7 +90,7 @@ namespace PartWizard
             }
         }
 
-        private Dictionary<Part, HighlightInfo> PreviousParts
+        private List<Part> PreviousParts
         {
             get
             {
@@ -147,7 +110,7 @@ namespace PartWizard
             this.instance = HighlightTracker.nextInstance++;
             this.tracking = false;
 
-            HighlightTracker.instanceParts.Add(this.instance, new Pair<Dictionary<Part, HighlightInfo>>());
+            HighlightTracker.instanceParts.Add(this.instance, new Pair<List<Part>>());
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CancelTracking"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndTracking")]
@@ -188,17 +151,23 @@ namespace PartWizard
             if(part == null)
                 throw new ArgumentNullException("part");
 
-            if(!this.Parts.ContainsKey(part) && this.PreviousParts.ContainsKey(part))
+            if(recursive)
+            {
+                foreach(Part childPart in part.children)
+                {
+                    this.Add(childPart, color, recursive);
+                }
+            }
+
+            if(!this.Parts.Contains(part) && this.PreviousParts.Contains(part))
             {
                 // This part was previously tracked, so move it to the current set.
 
-                HighlightInfo highlightInfo = this.PreviousParts[part];
-
                 this.PreviousParts.Remove(part);
 
-                this.Parts.Add(part, highlightInfo);
+                this.Parts.Add(part);
             }
-            if(!this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
+            if(!this.Parts.Contains(part) && !this.PreviousParts.Contains(part))
             {
                 // This part wasn't previously tracked by this instance. Look for it in the master set and move it to the current set if found.
 
@@ -208,7 +177,7 @@ namespace PartWizard
                 {
                     if(globalParts.Key != this.instance)
                     {
-                        if(globalParts.Value.Left.ContainsKey(part))
+                        if(globalParts.Value.Left.Contains(part))
                         {
                             HighlightTracker.Transfer(part, globalParts.Value.Left, this.Parts);
 
@@ -216,7 +185,7 @@ namespace PartWizard
 
                             break;
                         }
-                        else if(globalParts.Value.Right.ContainsKey(part))
+                        else if(globalParts.Value.Right.Contains(part))
                         {
                             HighlightTracker.Transfer(part, globalParts.Value.Right, this.Parts);
 
@@ -227,20 +196,17 @@ namespace PartWizard
                     }
                 }
 
-                // The part wasn't found, store the current (original) highlight state and add it to the current set.
+                // The part wasn't found, add it to the current set.
                 if(!found)
                 {
-                    HighlightInfo highlightInfo = HighlightInfo.From(part);
-
-                    this.Parts.Add(part, highlightInfo);
+                    this.Parts.Add(part);
                 }
             }
             
             // The part should be in the current set by this point.
-            Log.Assert(this.Parts.ContainsKey(part));
+            Log.Assert(this.Parts.Contains(part));
 
             // Update the part with the requested settings.
-            part.highlightRecurse = recursive;
             part.SetHighlightColor(color);
         }
 
@@ -249,12 +215,11 @@ namespace PartWizard
             this.Add(part, color, false);
         }
 
-        private static void Transfer(Part part, Dictionary<Part, HighlightInfo> source, Dictionary<Part, HighlightInfo> destination)
+        private static void Transfer(Part part, List<Part> source, List<Part> destination)
         {
-            HighlightInfo highlightInfo = source[part];
             source.Remove(part);
 
-            destination.Add(part, highlightInfo);
+            destination.Add(part);
         }
 
         public void Add(PartGroup group, Color color, bool recursive)
@@ -285,9 +250,9 @@ namespace PartWizard
             if(!tracking)
                 throw new GUIControlsException("Highlight tracking must be started before tracking can be completed.");
 
-            foreach(Part part in this.Parts.Keys)
+            foreach(Part part in this.Parts)
             {
-                part.SetHighlight(true);
+                part.SetHighlight(true, false);
             }
 
             HighlightTracker.Restore(this.PreviousParts);
@@ -307,7 +272,7 @@ namespace PartWizard
             this.tracking = false;
 
             // Eliminate duplicates held in previousParts.
-            foreach(Part part in this.Parts.Keys)
+            foreach(Part part in this.Parts)
             {
                 this.PreviousParts.Remove(part);
             }
@@ -320,14 +285,11 @@ namespace PartWizard
             this.PreviousParts.Clear();
         }
 
-        private static void Restore(Dictionary<Part, HighlightInfo> parts)
+        private static void Restore(List<Part> parts)
         {
-            foreach(KeyValuePair<Part, HighlightInfo> partHighlightInfo in parts)
+            foreach(Part part in parts)
             {
-                partHighlightInfo.Key.SetHighlightColor(partHighlightInfo.Value.Original.Color);
-                partHighlightInfo.Key.highlightType = partHighlightInfo.Value.Original.Type;
-                partHighlightInfo.Key.SetHighlight(partHighlightInfo.Value.Original.Active);
-                partHighlightInfo.Key.highlightRecurse = partHighlightInfo.Value.Original.Recursive;
+                part.SetHighlightDefault();
             }
         }
     }

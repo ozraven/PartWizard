@@ -51,13 +51,29 @@ namespace PartWizard
         private bool renderError;
 
         private const ControlTypes EditorLockControlTypes = ControlTypes.CAMERACONTROLS
-                                                | ControlTypes.EDITOR_ICON_HOVER
-                                                | ControlTypes.EDITOR_ICON_PICK
-                                                | ControlTypes.EDITOR_PAD_PICK_PLACE
-                                                | ControlTypes.EDITOR_PAD_PICK_COPY
-                                                | ControlTypes.EDITOR_EDIT_STAGES
-                                                | ControlTypes.EDITOR_ROTATE_PARTS
-                                                | ControlTypes.EDITOR_OVERLAYS;
+                                                            | ControlTypes.EDITOR_ICON_HOVER
+                                                            | ControlTypes.EDITOR_ICON_PICK
+                                                            | ControlTypes.EDITOR_TAB_SWITCH
+                                                            | ControlTypes.EDITOR_SAVE
+                                                            | ControlTypes.EDITOR_LOAD
+                                                            | ControlTypes.EDITOR_EXIT
+                                                            | ControlTypes.EDITOR_NEW
+                                                            | ControlTypes.EDITOR_LAUNCH
+                                                            | ControlTypes.EDITOR_UI_TOPRIGHT
+                                                            | ControlTypes.EDITOR_PAD_PICK_PLACE
+                                                            | ControlTypes.EDITOR_PAD_PICK_COPY
+                                                            | ControlTypes.EDITOR_GIZMO_TOOLS
+                                                            | ControlTypes.EDITOR_ROOT_REFLOW
+                                                            | ControlTypes.EDITOR_SYM_SNAP_UI
+                                                            | ControlTypes.EDITOR_EDIT_STAGES
+                                                            | ControlTypes.EDITOR_EDIT_NAME_FIELDS
+                                                            | ControlTypes.EDITOR_UNDO_REDO
+                                                            | ControlTypes.EDITOR_MODE_SWITCH
+                                                            | ControlTypes.EDITOR_UI_TOPBAR
+                                                            | ControlTypes.EDITOR_SOFT_LOCK
+                                                            | ControlTypes.EDITOR_LOCK
+                                                            | ControlTypes.EDITOR_UI;
+
         private volatile bool editorLocked;
         private string editorLockToken;
         
@@ -71,12 +87,10 @@ namespace PartWizard
             Settings = 8,                   // SceneFlags.SETTINGS
             Credits = 16,                   // SceneFlags.CREDITS
             SpaceCenter = 32,               // SceneFlags.SPACECENTER
-            VehicleAssemblyBuilding = 64,   // SceneFlags.EDITOR
+            Editor = 64,                    // SceneFlags.EDITOR
             Flight = 128,                   // SceneFlags.FLIGHT
             TrackingStation = 256,          // SceneFlags.TRACKSTATION
-            SpaceplaneHangar = 512,         // SceneFlags.SPH
-            PSYSTEM = 1024,                 // SceneFlags.PSYSTEM
-            Editor = VehicleAssemblyBuilding | SpaceplaneHangar
+            PSYSTEM = 512                   // SceneFlags.PSYSTEM
         }
 
         #region Scene Conversion
@@ -84,7 +98,7 @@ namespace PartWizard
         private static Scene SceneFromGameScenes(GameScenes gameScene)
         {
             Scene result = Scene.None;
-
+            
             switch(gameScene)
             {
             case GameScenes.LOADING:
@@ -106,16 +120,13 @@ namespace PartWizard
                 result = Scene.SpaceCenter;
                 break;
             case GameScenes.EDITOR:
-                result = Scene.VehicleAssemblyBuilding;
+                result = Scene.Editor;
                 break;
             case GameScenes.FLIGHT:
                 result = Scene.Flight;
                 break;
             case GameScenes.TRACKSTATION:
                 result = Scene.TrackingStation;
-                break;
-            case GameScenes.SPH:
-                result = Scene.SpaceplaneHangar;
                 break;
             case GameScenes.PSYSTEM:
                 result = Scene.PSYSTEM;
