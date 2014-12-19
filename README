@@ -1,5 +1,5 @@
 ﻿Part Wizard Plugin for Kerbal Space Program
-Version 1.1.1.0
+Version 1.1.2.0
 
 1. Features
 2. Requirements
@@ -25,7 +25,7 @@ Version 1.1.1.0
 
 2. Requirements
 
-blizzy78's Toolbar plugin is required in order to show the Part Wizard interface. The plugin is NOT included with Part Wizard and must be downloaded separately: http://blizzy.de/toolbar/download.html See the official Kerbal Space Program forum thread for more information: http://forum.kerbalspaceprogram.com/threads/60863-0-23-5-Toolbar-1-7-1-Common-API-for-draggable-resizable-buttons-toolbar
+blizzy78's Toolbar plugin is required in order to show the Part Wizard interface. The plugin is NOT included with Part Wizard and must be downloaded separately: http://blizzy.de/toolbar/download.html See the official Kerbal Space Program forum thread for more information: http://forum.kerbalspaceprogram.com/threads/60863/
 
 3. Installation
 
