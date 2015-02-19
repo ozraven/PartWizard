@@ -166,7 +166,7 @@
     <comment>{0} = part count.</comment>
   </data>
   <data name="StatusLabelSingularTooltipTextFormat" xml:space="preserve">
-    <value>{0} part, {1}.</value>
+    <value>{0:N0} part, {1}.</value>
     <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
   </data>
   <data name="ViewTypeAll" xml:space="preserve">
@@ -195,11 +195,11 @@
     <value>Remove Group</value>
   </data>
   <data name="StatusLabelPluralTextFormat" xml:space="preserve">
-    <value>{0} parts.</value>
+    <value>{0:N0} parts.</value>
     <comment>{0} = part count.</comment>
   </data>
   <data name="StatusLabelPluralTooltipTextFormat" xml:space="preserve">
-    <value>{0} parts, {1}.</value>
+    <value>{0:N0} parts, {1}.</value>
     <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
   </data>
   <data name="DeletePartPluralDescription" xml:space="preserve">
@@ -210,5 +210,17 @@
   </data>
   <data name="UpButtonSymbol" xml:space="preserve">
     <value>/\</value>
+  </data>
+  <data name="BuyAllButtonTextFormat" xml:space="preserve">
+    <value>Buy All (√{0:N0})</value>
+  </data>
+  <data name="BuyPartButtonText" xml:space="preserve">
+    <value>√</value>
+  </data>
+  <data name="BuyPartDescriptionTextFormat" xml:space="preserve">
+    <value>buy highlighted part for √{0:N0}</value>
+  </data>
+  <data name="ViewTypeUnavailable" xml:space="preserve">
+    <value>Unavailable</value>
   </data>
 </root>

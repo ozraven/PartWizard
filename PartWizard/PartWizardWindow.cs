@@ -42,7 +42,7 @@ namespace PartWizard
 
     internal sealed class PartWizardWindow : GUIWindow
     {
-        private static readonly Rect DefaultDimensions = new Rect(280, 160, 250, 400);
+        private static readonly Rect DefaultDimensions = new Rect(280, 160, 300, 400);
         private static readonly Rect MinimumDimensions = new Rect(0, 0, DefaultDimensions.width, DefaultDimensions.height);
         
         private readonly Color TooltipLabelColor = Color.yellow;
@@ -58,7 +58,8 @@ namespace PartWizard
         private enum ViewType
         {
             All = 0,
-            Hidden = 1
+            Hidden = 1,
+            Unavailable = 2
         }
 
         private ViewType viewType = ViewType.All;
@@ -85,7 +86,7 @@ namespace PartWizard
 
             this.unselectedViewTypeStyle = new GUIStyle("button");
 
-            this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
+            this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden), new GUIContent(Localized.ViewTypeUnavailable) };
 
             this.symmetryEditorWindow = new SymmetryEditorWindow();
 
@@ -135,9 +136,40 @@ namespace PartWizard
 
                 GUILayout.EndHorizontal();
 
+                List<Part> buyableParts = null;
+
                 if(this.viewType == ViewType.Hidden)
                 {
                     parts = parts.FindAll((p) => { return p.partInfo.category == PartCategories.none; });
+                }
+                else if(this.viewType == ViewType.Unavailable)
+                {
+                    parts = parts.FindAll((p) => {
+                        bool result = false;
+
+                        // Get the R&D technology state for the current part.
+                        ProtoTechNode techState = ResearchAndDevelopment.Instance.GetTechState(p.partInfo.TechRequired);
+
+                        // If there is a state or the technology is locked or the part hasn't been purchased...
+                        if(techState == null || techState.state != RDTech.State.Available || !techState.partsPurchased.Contains(p.partInfo))
+                        {
+                            // ...add it to the list.
+                            result = true;
+                        }
+
+                        return result;
+                    });
+
+                    // Stash the filtered list in to the buyable list.
+                    buyableParts = parts;
+                    // Create a new collection with a copy of all the buyable parts.
+                    parts = new List<Part>(buyableParts);
+                    // Create a hash set to act as a filter for duplicate parts.
+                    HashSet<string> duplicatePartFilter = new HashSet<string>();
+                    // Remove each part that has already been added to the hash filter.
+                    parts.RemoveAll((p) => !duplicatePartFilter.Add(p.name));
+
+                    // Here parts is a list of unique buyable parts and buyableParts is all of the buyable parts, including duplicates.
                 }
 
                 #endregion
@@ -148,69 +180,107 @@ namespace PartWizard
 
                 this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
+                int totalEntryCost = 0;
+
                 foreach(Part part in parts)
                 {
+                    totalEntryCost += part.partInfo.entryCost;
+
                     GUIControls.BeginMouseOverHorizontal();
 
                     #region Part Label
 
-                    GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name));
+                    GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name), GUIControls.PartLabelWidth);
 
                     #endregion
+
+                    GUILayout.FlexibleSpace();
 
                     // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
                     GUI.enabled = EditorLogic.SelectedPart == null;
-                        
-                    #region Break Symmetry Button
-
-                    string breakabilityReport = default(string);
-                    GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
-
-                    string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
-
-                    bool breakSymmetryMouseOver = false;
-                    if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, Configuration.PartActionButtonWidth))
-                    {
-                        this.symmetryEditorWindow.Part = part;
-
-                        if(!this.symmetryEditorWindow.Visible)
-                        {
-                            this.symmetryEditorWindow.Show(this);
-
-                            // Short circuit the mouse over for breaking symmetry when showing the Symmetry Editor in case it appears over top of this
-                            // button and immediately begins highlighting parts. This would cause *this* window's highlighting to be stuck on the part.
-                            breakSymmetryMouseOver = false;
-                        }
-                    }
-
-                    breakSymmetryMouseOver &= GUI.enabled;  // Clear mouse over flag if the symmetry button was disabled.
-
-                    #endregion
-
-                    #region Delete Button
 
                     bool deleted = false;                   // Will be set to true if the delete button was pressed.
+                    bool bought = false;                    // Will be set to true if the buy button was pressed.
 
-                    GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.IsDeleteable(part);
-
-                    string deleteTooltip = GUI.enabled 
-                        ? ((part.symmetryCounterparts.Count == 0) ? Localized.DeletePartSingularDescription : Localized.DeletePartPluralDescription)
-                        : default(string);
-
+                    bool breakSymmetryMouseOver = false;    // Will be set to true if the mouse is over the part's break symmetry button.
                     bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
-                    if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, Configuration.PartActionButtonWidth))
+                    bool buyButtonMouseOver = false;        // Will be set to true if the mouse is over the part's buy button.
+
+                    string deleteTooltip = default(string);
+                    string buyTooltip = default(string);
+
+                    if(this.viewType == ViewType.All || this.viewType == ViewType.Hidden)
                     {
-                        Log.Write("Deleting part {0}.", part.name);
+                        #region Break Symmetry Button
 
-                        PartWizard.Delete(part);
+                        string breakabilityReport = default(string);
+                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
 
-                        // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
-                        deleted = true;
+                        string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
+
+                        breakSymmetryMouseOver = false;
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BreakSymmetryButtonText, breakSymmetryTooltip), out breakSymmetryMouseOver, Configuration.PartActionButtonWidth))
+                        {
+                            this.symmetryEditorWindow.Part = part;
+
+                            if(!this.symmetryEditorWindow.Visible)
+                            {
+                                this.symmetryEditorWindow.Show(this);
+
+                                // Short circuit the mouse over for breaking symmetry when showing the Symmetry Editor in case it appears over top of this
+                                // button and immediately begins highlighting parts. This would cause *this* window's highlighting to be stuck on the part.
+                                breakSymmetryMouseOver = false;
+                            }
+                        }
+
+                        breakSymmetryMouseOver &= GUI.enabled;  // Clear mouse over flag if the symmetry button was disabled.
+
+                        #endregion
+
+                        #region Delete Button
+
+                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.IsDeleteable(part);
+
+                        deleteTooltip = GUI.enabled
+                            ? ((part.symmetryCounterparts.Count == 0) ? Localized.DeletePartSingularDescription : Localized.DeletePartPluralDescription)
+                            : default(string);
+
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, Configuration.PartActionButtonWidth))
+                        {
+                            Log.Write("Deleting part {0}.", part.name);
+
+                            PartWizard.Delete(part);
+
+                            // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
+                            deleted = true;
+                        }
+
+                        deleteButtonMouseOver &= GUI.enabled;   // Clear mouse over flag if the delete button was disabled.
+
+                        #endregion
                     }
+                    else // this.viewType == ViewType.Unavailable
+                    {
+                        #region Buy Button
 
-                    deleteButtonMouseOver &= GUI.enabled;   // Clear mouse over flag if the delete button was disabled.
+                        GUI.enabled = EditorLogic.SelectedPart == null && (double)part.partInfo.entryCost <= Funding.Instance.Funds;
 
-                    #endregion
+                        buyTooltip = GUI.enabled ? string.Format(Localized.BuyPartDescriptionTextFormat, part.partInfo.entryCost) : default(string);
+
+                        if(GUIControls.MouseOverButton(new GUIContent(Localized.BuyPartButtonText, buyTooltip), out buyButtonMouseOver, Configuration.PartActionButtonWidth))
+                        {
+                            Log.Write("Buying part {0}.", part.name);
+
+                            PartWizard.Buy(part, true);
+
+                            // Set a flag so additional GUI logic can decide what to do in the case where a part is bought.
+                            bought = true;
+                        }
+
+                        buyButtonMouseOver &= GUI.enabled;  // Clear mouse over flag if the buy button was disabled.
+
+                        #endregion
+                    }
 
                     GUI.enabled = true;
 
@@ -218,7 +288,7 @@ namespace PartWizard
                     GUIControls.EndMouseOverHorizontal(out groupMouseOver);     // End of row for this part.
 
                     // If we deleted a part, then just jump out of the loop since the parts list has been modified.
-                    if(deleted)
+                    if(deleted || bought)
                     {
                         break;
                     }
@@ -233,11 +303,35 @@ namespace PartWizard
                     {
                         this.highlight.Add(part, Configuration.HighlightColorDeletablePart, Configuration.HighlightColorDeletableCounterparts, true);
                     }
+                    else if(buyButtonMouseOver)
+                    {
+                        // TODO: Duplicate code!
+                        buyableParts.ForEach((p) => {
+                            if(part.name == p.name)
+                            {
+                                this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
+                            }
+                        });
+                    }
                     else if(groupMouseOver)
                     {
-                        Color highlightColor = (part == EditorLogic.RootPart) ? Configuration.HighlightColorRootPart : Configuration.HighlightColorSinglePart;
+                        if(viewType != ViewType.Unavailable)
+                        {
+                            Color highlightColor = (part == EditorLogic.RootPart) ? Configuration.HighlightColorRootPart : Configuration.HighlightColorSinglePart;
 
-                        this.highlight.Add(part, highlightColor, Configuration.HighlightColorCounterparts, false);
+                            this.highlight.Add(part, highlightColor, Configuration.HighlightColorCounterparts, false);
+                        }
+                        else
+                        {
+                            // TODO: Duplicate code!
+                            buyableParts.ForEach((p) =>
+                            {
+                                if(part.name == p.name)
+                                {
+                                    this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
+                                }
+                            });
+                        }
                     }
 
                     #endregion
@@ -246,6 +340,34 @@ namespace PartWizard
                 GUILayout.EndScrollView();
 
                 GUILayout.EndVertical();
+
+                if(viewType == ViewType.Unavailable)
+                {
+                    GUI.enabled = parts.Count > 0;
+
+                    bool buyAllMouseOver = false;
+                    if(GUIControls.MouseOverButton(new GUIContent(string.Format(Localized.BuyAllButtonTextFormat, totalEntryCost)), out buyAllMouseOver))
+                    {
+                        foreach(Part part in parts)
+                        {
+                            Log.Write("Buying part {0}.", part.name);
+                            
+                            PartWizard.Buy(part);
+                        }
+
+                        PartWizard.SaveGame();
+                    }
+
+                    // TODO: Highlight all parts that will be bought by clicking Buy All.
+                    if(buyAllMouseOver)
+                    {
+                        buyableParts.ForEach((p) => {
+                            this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
+                        });
+                    }
+
+                    GUI.enabled = true;
+                }
 
                 #endregion
 
@@ -284,9 +406,12 @@ namespace PartWizard
 
                 GUILayout.EndVertical();
             }
-            catch(Exception)
+            catch(Exception e)
             {
                 this.highlight.CancelTracking();
+
+                Log.Write(e.Message);
+                Log.Write(e.StackTrace);
 
                 throw;
             }

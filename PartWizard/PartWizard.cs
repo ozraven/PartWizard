@@ -68,6 +68,28 @@ namespace PartWizard
             Staging.SortIcons();
         }
 
+        public static void Buy(Part part, bool saveGame = false)
+        {
+            if(part == null)
+                throw new ArgumentNullException("part");
+
+            ResearchAndDevelopment.Instance.GetTechState(part.partInfo.TechRequired).partsPurchased.Add(part.partInfo);
+
+            GameEvents.OnPartPurchased.Fire(part.partInfo);
+
+            EditorPartList.Instance.Refresh();
+
+            if(saveGame)
+            {
+                PartWizard.SaveGame();
+            }
+        }
+
+        public static void SaveGame()
+        {
+            GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+        }
+
 #if DEBUG
         public static Part FindSymmetryRoot(Part part)
         {

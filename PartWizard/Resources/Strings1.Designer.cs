@@ -97,6 +97,33 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Buy All (√{0:N0}).
+        /// </summary>
+        internal static string BuyAllButtonTextFormat {
+            get {
+                return ResourceManager.GetString("BuyAllButtonTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to √.
+        /// </summary>
+        internal static string BuyPartButtonText {
+            get {
+                return ResourceManager.GetString("BuyPartButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to buy highlighted part for √{0:N0}.
+        /// </summary>
+        internal static string BuyPartDescriptionTextFormat {
+            get {
+                return ResourceManager.GetString("BuyPartDescriptionTextFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         internal static string Cancel {
@@ -232,7 +259,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} parts..
+        ///   Looks up a localized string similar to {0:N0} parts..
         /// </summary>
         internal static string StatusLabelPluralTextFormat {
             get {
@@ -241,7 +268,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} parts, {1}..
+        ///   Looks up a localized string similar to {0:N0} parts, {1}..
         /// </summary>
         internal static string StatusLabelPluralTooltipTextFormat {
             get {
@@ -259,7 +286,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} part, {1}..
+        ///   Looks up a localized string similar to {0:N0} part, {1}..
         /// </summary>
         internal static string StatusLabelSingularTooltipTextFormat {
             get {
@@ -300,6 +327,15 @@ namespace PartWizard.Resources {
         internal static string ViewTypeHidden {
             get {
                 return ResourceManager.GetString("ViewTypeHidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unavailable.
+        /// </summary>
+        internal static string ViewTypeUnavailable {
+            get {
+                return ResourceManager.GetString("ViewTypeUnavailable", resourceCulture);
             }
         }
     }

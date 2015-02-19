@@ -64,7 +64,7 @@ namespace PartWizard
         private static readonly ConfigNode Root = ConfigNode.Load(Configuration.Path) ?? new ConfigNode();
 
         public static readonly GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
-
+        
         public static readonly Color HighlightColorDeletablePart = Color.red;
         public static readonly Color HighlightColorDeletableCounterparts = Color.red;
         public static readonly Color HighlightColorSinglePart = Color.green;
@@ -73,6 +73,7 @@ namespace PartWizard
         public static readonly Color HighlightColorEditableSymmetryCounterparts = Color.yellow;
         public static readonly Color HighlightColorRootPart = Color.blue;
         public static readonly Color HighlightColorSymmetryEditor = Color.cyan;
+        public static readonly Color HighlightColorBuyablePart = Color.white;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static Configuration()

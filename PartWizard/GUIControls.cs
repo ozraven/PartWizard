@@ -35,7 +35,8 @@ namespace PartWizard
         private static bool layoutStarted = false;
 
         public static readonly GUIStyle PanelStyle = new GUIStyle("box");
-        
+        public static readonly GUILayoutOption PartLabelWidth = GUILayout.Width(200.0f);
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndLayout")]
         public static void BeginLayout()
         {
