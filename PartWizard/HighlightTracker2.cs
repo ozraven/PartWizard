@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014, Eric Harris (ozraven)
+﻿// Copyright (c) 2015, Eric Harris (ozraven)
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,18 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+using HighlightingSystem;
+
 namespace PartWizard
 {
 #if TEST
     using Part = global::PartWizard.Test.MockPart;
 #endif
-    
+
     /// <summary>
     /// A class for modifying and restoring the state of globally shared resource, such as the highlighting state of Part objects, in this case.
     /// </summary>
-    internal sealed class HighlightTracker : IHighlightTracker
+    internal sealed class HighlightTracker2 : IHighlightTracker
     {
         #region Global Part Highlight Tracking
 
@@ -73,7 +75,7 @@ namespace PartWizard
         private static int nextInstance = 0;    // Automatically incremented each time an instance of this class is created.
 
         // A global dictionary of parts sorted by HighlightTracker instance.
-        private static Dictionary<int, Pair<List<Part>>> instanceParts = new Dictionary<int, Pair<List<Part>>>();
+        private static Dictionary<int, Pair<Dictionary<Part, bool>>> instanceParts = new Dictionary<int, Pair<Dictionary<Part, bool>>>();
 
         #endregion
 
@@ -82,35 +84,35 @@ namespace PartWizard
 
         #region Private Logic Simplifiers
 
-        private List<Part> Parts
+        private Dictionary<Part, bool> Parts
         {
             get
             {
-                return HighlightTracker.instanceParts[this.instance].Left;
+                return HighlightTracker2.instanceParts[this.instance].Left;
             }
         }
 
-        private List<Part> PreviousParts
+        private Dictionary<Part, bool> PreviousParts
         {
             get
             {
-                return HighlightTracker.instanceParts[this.instance].Right;
+                return HighlightTracker2.instanceParts[this.instance].Right;
             }
         }
 
         private void Swap()
         {
-            HighlightTracker.instanceParts[this.instance].Swap();
+            HighlightTracker2.instanceParts[this.instance].Swap();
         }
 
         #endregion
 
-        public HighlightTracker()
+        public HighlightTracker2()
         {
-            this.instance = HighlightTracker.nextInstance++;
+            this.instance = HighlightTracker2.nextInstance++;
             this.tracking = false;
 
-            HighlightTracker.instanceParts.Add(this.instance, new Pair<List<Part>>());
+            HighlightTracker2.instanceParts.Add(this.instance, new Pair<Dictionary<Part, bool>>());
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CancelTracking"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EndTracking")]
@@ -159,35 +161,33 @@ namespace PartWizard
                 }
             }
 
-            if(!this.Parts.Contains(part) && this.PreviousParts.Contains(part))
+            if(!this.Parts.ContainsKey(part) && this.PreviousParts.ContainsKey(part))
             {
                 // This part was previously tracked, so move it to the current set.
-
-                this.PreviousParts.Remove(part);
-
-                this.Parts.Add(part);
+                HighlightTracker2.Transfer(part, this.PreviousParts, this.Parts);
             }
-            if(!this.Parts.Contains(part) && !this.PreviousParts.Contains(part))
+
+            if(!this.Parts.ContainsKey(part) && !this.PreviousParts.ContainsKey(part))
             {
                 // This part wasn't previously tracked by this instance. Look for it in the master set and move it to the current set if found.
 
                 bool found = false;
 
-                foreach(var globalParts in HighlightTracker.instanceParts)
+                foreach(var globalParts in HighlightTracker2.instanceParts)
                 {
                     if(globalParts.Key != this.instance)
                     {
-                        if(globalParts.Value.Left.Contains(part))
+                        if(globalParts.Value.Left.ContainsKey(part))
                         {
-                            HighlightTracker.Transfer(part, globalParts.Value.Left, this.Parts);
+                            HighlightTracker2.Transfer(part, globalParts.Value.Left, this.Parts);
 
                             found = true;
 
                             break;
                         }
-                        else if(globalParts.Value.Right.Contains(part))
+                        else if(globalParts.Value.Right.ContainsKey(part))
                         {
-                            HighlightTracker.Transfer(part, globalParts.Value.Right, this.Parts);
+                            HighlightTracker2.Transfer(part, globalParts.Value.Right, this.Parts);
 
                             found = true;
 
@@ -199,15 +199,14 @@ namespace PartWizard
                 // The part wasn't found, add it to the current set.
                 if(!found)
                 {
-                    this.Parts.Add(part);
+                    this.Parts.Add(part, recursive);
                 }
             }
-            
-            // The part should be in the current set by this point.
-            Log.Assert(this.Parts.Contains(part));
 
-            // Update the part with the requested settings.
-            part.SetHighlightColor(color);
+            // The part should be in the current set by this point.
+            Log.Assert(this.Parts.ContainsKey(part));
+
+            HighlightTracker2.Modify(part, color, recursive);
         }
 
         public void Add(Part part, Color color)
@@ -215,11 +214,13 @@ namespace PartWizard
             this.Add(part, color, false);
         }
 
-        private static void Transfer(Part part, List<Part> source, List<Part> destination)
+        private static void Transfer(Part part, Dictionary<Part, bool> source, Dictionary<Part, bool> destination)
         {
+            bool recursive = source[part];
+
             source.Remove(part);
 
-            destination.Add(part);
+            destination.Add(part, recursive);
         }
 
         public void Add(PartGroup group, Color color, bool recursive)
@@ -250,16 +251,14 @@ namespace PartWizard
             if(!tracking)
                 throw new GUIControlsException("Highlight tracking must be started before tracking can be completed.");
 
-            foreach(Part part in this.Parts)
+            if(Event.current.type == EventType.Repaint)
             {
-                part.SetHighlight(true, false);
+                HighlightTracker2.Restore(this.PreviousParts);
+
+                this.PreviousParts.Clear();
+
+                this.Swap();
             }
-
-            HighlightTracker.Restore(this.PreviousParts);
-
-            PreviousParts.Clear();
-
-            this.Swap();
 
             this.tracking = false;
         }
@@ -272,24 +271,59 @@ namespace PartWizard
             this.tracking = false;
 
             // Eliminate duplicates held in previousParts.
-            foreach(Part part in this.Parts)
+            foreach(Part part in this.Parts.Keys)
             {
                 this.PreviousParts.Remove(part);
             }
-            
+
             // Now previousParts and parts have all the parts we need to restore.
-            HighlightTracker.Restore(this.Parts);
-            HighlightTracker.Restore(this.PreviousParts);
-            
+            HighlightTracker2.Restore(this.Parts);
+            HighlightTracker2.Restore(this.PreviousParts);
+
             this.Parts.Clear();
             this.PreviousParts.Clear();
         }
 
-        private static void Restore(List<Part> parts)
+        private static void Modify(Part part, Color color, bool recursive)
         {
-            foreach(Part part in parts)
+            // Update the part with the requested settings.
+            part.SetHighlightColor(color);
+            part.SetHighlight(true, recursive);
+            
+            Highlighter highlighter = part.highlighter;
+            highlighter.SeeThroughOn();
+            highlighter.ConstantOn(color);
+        }
+
+        private static void Restore(Dictionary<Part, bool> parts)
+        {
+            foreach(KeyValuePair<Part, bool> entry in parts)
             {
+                Part part = entry.Key;
+                bool recursive = entry.Value;
+
+                HighlightTracker2.Restore(part, recursive);
+            }
+        }
+
+        private static void Restore(Part part, bool recursive)
+        {
+            try
+            {
+                // Restore the part to default.
                 part.SetHighlightDefault();
+                part.SetHighlight(false, recursive);
+
+                Highlighter highlighter = part.highlighter;
+                highlighter.ConstantOff();
+                highlighter.SeeThroughOff();
+            }
+            catch(NullReferenceException)
+            {
+                // Nothing to do here except swallow it, the part was likely deleted and now attempting to restore it is going to fail because
+                // the object is being torn down.
+
+                // Maybe only do actual part tracking during repaint?
             }
         }
     }

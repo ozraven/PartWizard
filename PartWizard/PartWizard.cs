@@ -56,6 +56,7 @@ namespace PartWizard
 
             // First, get the parent part and delete the child part.
             Part parent = part.parent;
+            
             parent.removeChild(part);
 
             // Second, do the creepy stalker way of forcing EditorLogic to change the selected part.
@@ -66,6 +67,23 @@ namespace PartWizard
 
             // Finally, poke the staging logic to sort out any changes due to deleting this part.
             Staging.SortIcons();
+        }
+
+        public static bool IsBuyable(Part part)
+        {
+            if(part == null)
+                throw new ArgumentNullException("part");
+
+            bool result = false;
+
+            ProtoTechNode techNode = ResearchAndDevelopment.Instance.GetTechState(part.partInfo.TechRequired);
+
+            if(techNode != null)
+            {
+                result = !techNode.partsPurchased.Contains(part.partInfo);
+            }
+
+            return result;
         }
 
         public static void Buy(Part part, bool saveGame = false)

@@ -146,6 +146,20 @@ namespace PartWizard
 
             return result;
         }
+
+        public static bool MouseOverButton(GUIContent content, out bool mouseOver, GUIStyle style)
+        {
+            bool result = GUILayout.Button(content, style);
+
+            mouseOver = false;
+
+            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+            {
+                mouseOver = true;
+            }
+
+            return result;
+        }
         
         /// <summary>
         /// Provides a horizontal GUI layout area that can detect if the mouse is within its area.

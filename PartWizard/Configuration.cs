@@ -71,9 +71,11 @@ namespace PartWizard
         public static readonly Color HighlightColorCounterparts = Color.yellow;
         public static readonly Color HighlightColorEditableSymmetryRoot = Color.yellow;
         public static readonly Color HighlightColorEditableSymmetryCounterparts = Color.yellow;
+        public static readonly Color HighlightColorEditableSymmetryChildParts = Color.white;
         public static readonly Color HighlightColorRootPart = Color.blue;
         public static readonly Color HighlightColorSymmetryEditor = Color.cyan;
         public static readonly Color HighlightColorBuyablePart = Color.white;
+        public static readonly Color HighlightColorActionEditorTarget = XKCDColors.Blue;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static Configuration()

@@ -66,6 +66,7 @@ namespace PartWizard
 
         private GUIStyle selectedViewTypeStyle;
         private GUIStyle unselectedViewTypeStyle;
+        private GUIStyle actionEditorModePartButtonStyle;
 
         private GUIContent[] viewTypeContents;
         
@@ -84,13 +85,17 @@ namespace PartWizard
             this.selectedViewTypeStyle.onNormal.textColor = Color.green;
             this.selectedViewTypeStyle.onHover.textColor = Color.green;
 
+            this.actionEditorModePartButtonStyle = new GUIStyle("button");
+            this.actionEditorModePartButtonStyle.onHover.textColor = Color.blue;
+            this.actionEditorModePartButtonStyle.alignment = TextAnchor.MiddleLeft;
+
             this.unselectedViewTypeStyle = new GUIStyle("button");
 
-            this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden), new GUIContent(Localized.ViewTypeUnavailable) };
+            this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
 
             this.symmetryEditorWindow = new SymmetryEditorWindow();
 
-            this.highlight = new HighlightTracker();
+            this.highlight = new HighlightTracker2();
         }
 
         public override void Hide()
@@ -103,6 +108,15 @@ namespace PartWizard
         public override void Show()
         {
             GameEvents.onPartRemove.Add(this.OnPartRemoved);
+
+            if(ResearchAndDevelopment.Instance != null)
+            {
+                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden), new GUIContent(Localized.ViewTypeUnavailable) };
+            }
+            else
+            {
+                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden) };
+            }
 
             base.Show();
         }
@@ -188,9 +202,32 @@ namespace PartWizard
 
                     GUIControls.BeginMouseOverHorizontal();
 
+                    bool actionEditorPartButtonMouseOver = false;
+
                     #region Part Label
 
-                    GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name), GUIControls.PartLabelWidth);
+                    if(EditorLogic.fetch.editorScreen != EditorScreen.Actions)
+                    {
+                        GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name));
+                    }
+                    else
+                    {
+                        if(GUIControls.MouseOverButton(new GUIContent(part.partInfo.title, part.partInfo.name), out actionEditorPartButtonMouseOver, this.actionEditorModePartButtonStyle))
+                        {
+                            // Each part gets the EditorActionPartSelector added to it when the editor switches to the Actions screen. (And it
+                            // gets taken away when leaving that screen.)
+                            EditorActionPartSelector selector = part.GetComponent<EditorActionPartSelector>();
+
+                            // Make sure we have it...
+                            if(selector != null)
+                            {
+                                // ...and select it.
+                                selector.Select();
+
+                                Log.Write("Action editor selecting part {0}.", part.name);
+                            }
+                        }
+                    }
 
                     #endregion
 
@@ -214,7 +251,7 @@ namespace PartWizard
                         #region Break Symmetry Button
 
                         string breakabilityReport = default(string);
-                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
+                        GUI.enabled = EditorLogic.SelectedPart == null && EditorLogic.fetch.editorScreen == EditorScreen.Parts && PartWizard.HasBreakableSymmetry(part, out breakabilityReport);
 
                         string breakSymmetryTooltip = GUI.enabled ? Localized.BreakSymmetryDescription : default(string);
 
@@ -239,7 +276,7 @@ namespace PartWizard
 
                         #region Delete Button
 
-                        GUI.enabled = EditorLogic.SelectedPart == null && PartWizard.IsDeleteable(part);
+                        GUI.enabled = EditorLogic.SelectedPart == null && EditorLogic.fetch.editorScreen == EditorScreen.Parts && PartWizard.IsDeleteable(part);
 
                         deleteTooltip = GUI.enabled
                             ? ((part.symmetryCounterparts.Count == 0) ? Localized.DeletePartSingularDescription : Localized.DeletePartPluralDescription)
@@ -247,8 +284,6 @@ namespace PartWizard
 
                         if(GUIControls.MouseOverButton(new GUIContent(Localized.DeletePartButtonText, deleteTooltip), out deleteButtonMouseOver, Configuration.PartActionButtonWidth))
                         {
-                            Log.Write("Deleting part {0}.", part.name);
-
                             PartWizard.Delete(part);
 
                             // Set a flag so additional GUI logic can decide what to do in the case where a part is deleted.
@@ -263,7 +298,7 @@ namespace PartWizard
                     {
                         #region Buy Button
 
-                        GUI.enabled = EditorLogic.SelectedPart == null && (double)part.partInfo.entryCost <= Funding.Instance.Funds;
+                        GUI.enabled = EditorLogic.SelectedPart == null && (double)part.partInfo.entryCost <= Funding.Instance.Funds && PartWizard.IsBuyable(part);
 
                         buyTooltip = GUI.enabled ? string.Format(Localized.BuyPartDescriptionTextFormat, part.partInfo.entryCost) : default(string);
 
@@ -297,7 +332,7 @@ namespace PartWizard
 
                     if(breakSymmetryMouseOver)
                     {
-                        this.highlight.Add(part, Configuration.HighlightColorEditableSymmetryRoot, Configuration.HighlightColorEditableSymmetryCounterparts);
+                        this.highlight.Add(part, Configuration.HighlightColorEditableSymmetryRoot, Configuration.HighlightColorEditableSymmetryCounterparts, true);
                     }
                     else if(deleteButtonMouseOver)
                     {
@@ -318,20 +353,30 @@ namespace PartWizard
                         if(viewType != ViewType.Unavailable)
                         {
                             Color highlightColor = (part == EditorLogic.RootPart) ? Configuration.HighlightColorRootPart : Configuration.HighlightColorSinglePart;
+                            Color counterpartHighlightColor = Configuration.HighlightColorCounterparts;
 
-                            this.highlight.Add(part, highlightColor, Configuration.HighlightColorCounterparts, false);
+                            if(EditorLogic.fetch.editorScreen == EditorScreen.Actions)
+                            {
+                                highlightColor = Configuration.HighlightColorActionEditorTarget;
+                                counterpartHighlightColor = Configuration.HighlightColorActionEditorTarget;
+                            }
+
+                            this.highlight.Add(part, highlightColor, counterpartHighlightColor, false);
                         }
                         else
                         {
                             // TODO: Duplicate code!
-                            buyableParts.ForEach((p) =>
-                            {
+                            buyableParts.ForEach((p) => {
                                 if(part.name == p.name)
                                 {
-                                    this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
+                                    this.highlight.Add(p, Configuration.HighlightColorBuyablePart, false);
                                 }
                             });
                         }
+                    }
+                    else if(actionEditorPartButtonMouseOver)
+                    {
+                        this.highlight.Add(part, Configuration.HighlightColorActionEditorTarget, Configuration.HighlightColorActionEditorTarget);
                     }
 
                     #endregion
@@ -343,10 +388,20 @@ namespace PartWizard
 
                 if(viewType == ViewType.Unavailable)
                 {
-                    GUI.enabled = parts.Count > 0;
+                    int buyableEntryCost = 0;
+                    bool enableBulkBuy = false;
+
+                    foreach(Part p in parts)
+                    {
+                        buyableEntryCost += p.partInfo.entryCost;
+
+                        enableBulkBuy |= PartWizard.IsBuyable(p);
+                    }
+
+                    GUI.enabled = parts.Count > 0 && (double)buyableEntryCost <= Funding.Instance.Funds && enableBulkBuy;
 
                     bool buyAllMouseOver = false;
-                    if(GUIControls.MouseOverButton(new GUIContent(string.Format(Localized.BuyAllButtonTextFormat, totalEntryCost)), out buyAllMouseOver))
+                    if(GUIControls.MouseOverButton(new GUIContent(string.Format(Localized.BuyAllButtonTextFormat, buyableEntryCost)), out buyAllMouseOver))
                     {
                         foreach(Part part in parts)
                         {
@@ -405,21 +460,8 @@ namespace PartWizard
                 #endregion
 
                 GUILayout.EndVertical();
-            }
-            catch(Exception e)
-            {
-                this.highlight.CancelTracking();
 
-                Log.Write(e.Message);
-                Log.Write(e.StackTrace);
-
-                throw;
-            }
-            finally
-            {
-                GUI.DragWindow();
-
-                if(this.visible && this.mouseOver)
+                if(this.Visible && this.mouseOver)
                 {
                     this.highlight.EndTracking();
                 }
@@ -427,6 +469,21 @@ namespace PartWizard
                 {
                     this.highlight.CancelTracking();
                 }
+            }
+            catch(Exception e)
+            {
+                Log.Write("PartWizardWindow.OnRender() unexpected exception caught.");
+
+                Log.Write(e.Message);
+                Log.Write(e.StackTrace);
+
+                this.highlight.CancelTracking();
+
+                throw;
+            }
+            finally
+            {
+                GUI.DragWindow();
             }
         }
     }

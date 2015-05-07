@@ -55,6 +55,7 @@ namespace PartWizard
             if(HighLogic.LoadedSceneIsEditor)
             {
                 this.partWizardWindow = new PartWizardWindow(PartWizardPlugin.Name, PartWizardPlugin.Version);
+                this.partWizardWindow.OnVisibleChanged += partWizardWindow_OnVisibleChanged;
 
                 if(ToolbarManager.ToolbarAvailable)
                 {
@@ -75,6 +76,11 @@ namespace PartWizard
             }
         }
 
+        private void partWizardWindow_OnVisibleChanged(GUIWindow window, bool visible)
+        {
+            this.UpdateToolbarIcon();
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "GUI")]
         public void OnGUI()
         {
@@ -86,6 +92,8 @@ namespace PartWizard
 
         public void OnDestroy()
         {
+            this.partWizardWindow.OnVisibleChanged -= partWizardWindow_OnVisibleChanged;
+
             this.partWizardWindow.Hide();
             this.partWizardWindow = null;
 
@@ -103,8 +111,6 @@ namespace PartWizard
             {
                 this.partWizardWindow.Show();
             }
-
-            this.UpdateToolbarIcon();
         }
 
         private void partWizardButton_Click(ClickEvent e)

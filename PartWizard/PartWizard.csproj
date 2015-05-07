@@ -73,21 +73,21 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\0.90\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.2\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\0.90\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.2\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\0.90\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.2\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GUIControls.cs" />
-    <Compile Include="HighlightTracker.cs" />
+    <Compile Include="HighlightTracker2.cs" />
     <Compile Include="HighlightTrackerException.cs" />
     <Compile Include="IHighlightTracker.cs" />
     <Compile Include="Log.cs" />

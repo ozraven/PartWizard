@@ -34,14 +34,18 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
+    internal delegate void VisibleChangedHandler(GUIWindow window, bool visible);
+
     internal abstract class GUIWindow
     {
+        public event VisibleChangedHandler OnVisibleChanged;
+
         private static volatile int NextWindowId = 5000;
 
         private Rect minimumDimensions;
         private Scene scene;
         private int windowId;
-        protected bool visible;
+        private bool visible;
         protected Rect window;
         private string title;
         private string configurationNodeName;
@@ -161,6 +165,15 @@ namespace PartWizard
             {
                 return this.visible;
             }
+            private set
+            {
+                this.visible = value;
+
+                if(this.OnVisibleChanged != null)
+                {
+                    this.OnVisibleChanged(this, this.Visible);
+                }
+            }
         }
 
         protected void SetTitle(string newTitle)
@@ -182,8 +195,8 @@ namespace PartWizard
             this.window.width = Mathf.Clamp(this.window.width, this.minimumDimensions.width, Screen.width - this.window.x);
             this.window.height = Mathf.Clamp(this.window.height, this.minimumDimensions.height, Screen.height - this.window.y);
 
-            this.visible = true;
-
+            this.Visible = true;
+            
             if(parentWindow != null)
             {
                 this.parent = parentWindow;
@@ -193,7 +206,7 @@ namespace PartWizard
 
         public virtual void Hide()
         {
-            this.visible = false;
+            this.Visible = false;
 
             Configuration.SetValue(this.configurationNodeName, this.window);
 
@@ -216,7 +229,7 @@ namespace PartWizard
 
             if((this.scene & loadedScene) == loadedScene)
             {
-                if(this.visible)
+                if(this.Visible)
                 {
                     GUI.skin.window.clipping = TextClipping.Clip;
 

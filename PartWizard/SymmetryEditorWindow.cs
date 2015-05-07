@@ -59,7 +59,7 @@ namespace PartWizard
         public SymmetryEditorWindow()
             : base(Scene.Editor, SymmetryEditorWindow.DefaultDimensions, SymmetryEditorWindow.MinimumDimensions, Localized.SymmetryEditor, "SYMMETRY_EDITOR_WINDOW")
         {
-            this.highlight = new HighlightTracker();
+            this.highlight = new HighlightTracker2();
 
             this.symmetryGroups = new List<PartGroup>();
         }
@@ -187,8 +187,12 @@ namespace PartWizard
 
                         if(mouseOverPartArea)
                         {
-                            this.highlight.Add(group, Configuration.HighlightColorCounterparts);
-                            this.highlight.Add(groupPart, Configuration.HighlightColorSinglePart);
+                            // First add the group with the child part color, recursively.
+                            this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryChildParts, true);
+                            // Next add the group with the counterparts highlighted, non-recursively.
+                            this.highlight.Add(group, Configuration.HighlightColorCounterparts, false);
+                            // Last add the specific part, non-recursively.
+                            this.highlight.Add(groupPart, Configuration.HighlightColorSinglePart, false);
 
                             mouseOverPart = true;
                         }
@@ -196,10 +200,10 @@ namespace PartWizard
 
                     bool groupMouseOver = false;
                     GUIControls.EndMouseOverVertical(out groupMouseOver);
-
+                    
                     if(!mouseOverPart && groupMouseOver)
                     {
-                        this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryCounterparts);
+                        this.highlight.Add(group, Configuration.HighlightColorEditableSymmetryCounterparts, true);
                     }
                 }
 
@@ -274,7 +278,7 @@ namespace PartWizard
             {
                 GUI.DragWindow();
 
-                if(this.visible && this.mouseOver)
+                if(this.Visible && this.mouseOver)
                 {
                     this.highlight.EndTracking();
                 }

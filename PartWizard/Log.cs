@@ -27,6 +27,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 
 using UnityEngine;
 
@@ -155,8 +156,71 @@ namespace PartWizard
                 Log.Write("\t{0} stackSymmetry = {1}", index, c.stackSymmetry);
                 Log.Write("\t{0} children = {1}", index, c.children.Count);
             }
-            Log.Write("END OF REPORT");
-#endif
+            Log.Write("END OF SYMMETRY REPORT");
+#endif // DEBUG
+        }
+
+        public static void WriteTransformReport(Part part)
+        {
+#if DEBUG
+            Log.Write("TRANSFORM REPORT FOR {0}", part.name);
+            Log.Write("\ttransform = {0}", part.transform != null ? part.transform.name : "<null>");
+            Log.Write("\tpartTransform = {0}", part.partTransform != null ? part.partTransform.name : "<null>");
+            Transform[] transforms = part.GetComponents<Transform>();
+            if(transforms == null)
+            {
+                Log.Write("\tTransforms: <n/a>");
+            }
+            else
+            {
+                Log.Write("\tTransforms:");
+
+                Log.WriteTransformReport(transforms, 2);
+            }
+            Log.Write("END OF TRANSFORM REPORT");
+#endif // DEBUG
+        }
+
+        private static void WriteTransformReport(Transform[] transforms, int tabCount)
+        {
+#if DEBUG
+            for(int transformIndex = 0; transformIndex < transforms.Length; transformIndex++)
+            {
+                StringBuilder reportLine = new StringBuilder();
+
+                for(int tabIndex = 0; tabIndex < tabCount; tabIndex++)
+                {
+                    reportLine.Append("\t");    
+                }
+
+                Transform transform = transforms[transformIndex];
+
+                reportLine.AppendFormat("{0} name = {1} ({2} children)", transformIndex, transform.name, transform.childCount);
+
+                Log.Write(reportLine.ToString());
+                
+                if(transform.childCount > 0)
+                {
+                    Log.WriteTransformReport(transform.GetChildren(), tabCount + 1);
+                }
+            }
+#endif // DEBUG
+        }
+
+        private static Transform[] GetChildren(this Transform transform)
+        {
+#if DEBUG
+            Transform[] result = new Transform[transform.childCount];
+
+            for(int index = 0; index < transform.childCount; index++)
+            {
+                result[index] = transform.GetChild(index);
+            }
+
+            return result;
+#else
+            return new Transform[0];
+#endif // DEBUG
         }
     }
 }
