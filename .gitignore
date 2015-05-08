@@ -5,3 +5,5 @@ Debug
 /PartWizard/obj/Release
 /PartWizard/bin/Test
 /PartWizard/obj/Test
+/Release*
+*.userprefs
