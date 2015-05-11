@@ -104,7 +104,7 @@ namespace PartWizard
         public void Start()
         {
             // this is needed because of a bug in KSP with event onGUIAppLauncherReady.
-            if (ToolbarIsStock && HighLogic.LoadedSceneIsEditor)
+            if(ToolbarIsStock && HighLogic.LoadedSceneIsEditor)
                 OnGUIAppLauncherReady();
         }
 
@@ -116,7 +116,7 @@ namespace PartWizard
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "GUI")]
         public void OnGUI()
         {
-            if (ToolbarTypeToggleActive)
+            if(ToolbarTypeToggleActive)
             {
                 ToolbarTypeToggle();
             }
@@ -133,7 +133,7 @@ namespace PartWizard
             this.partWizardWindow.Hide();
             this.partWizardWindow = null;
 
-            if (ToolbarIsStock)
+            if(ToolbarIsStock)
             {
                 GameEvents.onGUIApplicationLauncherReady.Remove(OnGUIAppLauncherReady);
                 GameEvents.onGUIApplicationLauncherDestroyed.Remove(OnGUIAppLauncherDestroyed);
@@ -164,7 +164,7 @@ namespace PartWizard
 
         private void UpdateToolbarIcon()
         {
-            if (!ToolbarIsStock)
+            if(!ToolbarIsStock)
             {
                 this.partWizardBlizzyButton.TexturePath = this.partWizardWindow.Visible ? this.toolbarIconActive : this.toolbarIconInactive;
             }
@@ -177,7 +177,7 @@ namespace PartWizard
         private void OnGUIAppLauncherReady()
         {
             // Setup PW Stock Toolbar button
-            if (HighLogic.LoadedSceneIsEditor && partWizardStockButton == null)
+            if(HighLogic.LoadedSceneIsEditor && partWizardStockButton == null)
             {
                 partWizardStockButton = ApplicationLauncher.Instance.AddModApplication(
                     ToggleVisibility,
@@ -189,29 +189,31 @@ namespace PartWizard
                     ApplicationLauncher.AppScenes.VAB | ApplicationLauncher.AppScenes.SPH,
                     (Texture)GameDatabase.Instance.GetTexture(StockToolbarIconActive, false));
 
-                if (this.partWizardWindow.Visible)
+                if(this.partWizardWindow.Visible)
                     partWizardStockButton.SetTexture((Texture)GameDatabase.Instance.GetTexture(this.partWizardWindow.Visible ? this.toolbarIconActive : this.toolbarIconInactive, false));
             }
         }
 
         private void OnGUIAppLauncherDestroyed()
         {
-            if (partWizardStockButton != null)
+            if(partWizardStockButton != null)
             {
                 ApplicationLauncher.Instance.RemoveModApplication(partWizardStockButton);
                 partWizardStockButton = null;
             }
         }
 
-        void DummyHandler() { }
+        void DummyHandler()
+        {
+        }
 
         internal void ToolbarTypeToggle()
         {
             // ToolbarIsStock value has not yet changed, so we evaluate the value against the fact it will be chaning.
-            if (ToolbarIsStock)
+            if(ToolbarIsStock)
             {
                 // Was Stock bar, so let't try to use Blizzy's toolbar
-                if (ToolbarManager.ToolbarAvailable)
+                if(ToolbarManager.ToolbarAvailable)
                 {
                     // Okay, Blizzy toolbar is available, so lets switch.
                     OnGUIAppLauncherDestroyed();
@@ -253,7 +255,6 @@ namespace PartWizard
 
                     OnGUIAppLauncherReady();
                 }
-
             }
             else
             {
@@ -269,11 +270,10 @@ namespace PartWizard
                 Configuration.SetValue(PartWizardPlugin.KeyToolbarIconActive, this.toolbarIconActive);
                 Configuration.SetValue(PartWizardPlugin.KeyToolbarIconInactive, this.toolbarIconInactive);
                 Configuration.Save();
-                
+
                 OnGUIAppLauncherReady();
             }
             ToolbarTypeToggleActive = false;
         }
-
     }
 }

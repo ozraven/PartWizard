@@ -223,4 +223,7 @@
   <data name="ViewTypeUnavailable" xml:space="preserve">
     <value>Unavailable</value>
   </data>
+  <data name="UseStockToolbar" xml:space="preserve">
+    <value>Use KSP's Stock Toolbar</value>
+  </data>
 </root>

@@ -1,12 +1,13 @@
 ﻿Part Wizard Plugin for Kerbal Space Program
-Version 1.2.0.0
+Version 1.2.1.0
 
 http://forum.kerbalspaceprogram.com/threads/80124/
 
 1. Features
 2. Requirements
-3. Installation
-4. Usage
+3. Supported Mods
+4. Installation
+5. Usage
    a. Part List Overview
    b. View Mode
       i. Sandbox Games
@@ -15,7 +16,7 @@ http://forum.kerbalspaceprogram.com/threads/80124/
    d. Editing Symmetry
    e. Selecting Parts for Action Group Assignment
    f. Undoing an Operation
-5. Copyright and Licensing Information
+6. Copyright and Licensing Information
 
 1. Features
 
@@ -34,13 +35,15 @@ http://forum.kerbalspaceprogram.com/threads/80124/
 
 2. Requirements
 
-blizzy78's Toolbar plugin is required in order to show the Part Wizard interface. The plugin is NOT included with Part Wizard and must be downloaded separately: http://blizzy.de/toolbar/download.html See the official Kerbal Space Program forum thread for more information: http://forum.kerbalspaceprogram.com/threads/60863/
+3. Supported Mods
 
-3. Installation
+   1. blizzy78's Toolbar plugin can be used as an alternative to the stock application launcher: http://blizzy.de/toolbar/download.html See the official Kerbal Space Program forum thread for more information: http://forum.kerbalspaceprogram.com/threads/60863/
+
+4. Installation
 
     1. Place the PartWizard folder in to your Kerbal Space Program installation under the GameData folder.
 	
-4. Usage
+5. Usage
 
 The Part Wizard toolbar icon is only available in the Vehicle Assembly Building (VAB) or Space Plane Hangar (SPH) editors. The first time you start Kerbal Space Program with the Part Wizard plugin installed, you will need to configure your toolbar to display the Part Wizard icon. Once configured, clicking the Part Wizard toolbar icon will show Part Wizard, and clicking the toolbar icon again will hide it.
 
@@ -76,7 +79,7 @@ The Part Wizard toolbar icon is only available in the Vehicle Assembly Building 
 
 	[1] Module Manager is a plugin for patching parts at load time, maintained by sarbian: http://forum.kerbalspaceprogram.com/threads/55219/
 
-5. Copyright and Licensing Information
+6. Copyright and Licensing Information
 
 Part Wizard contains portions of "Toolbar" licensed under the terms of the "Simplified BSD License" and is copyright (c) Maik Schreiber. (http://opensource.org/licenses/BSD-2-Clause)
 Part Wizard is licensed, as follows, under the terms of the "Modified BSD License": http://opensource.org/licenses/BSD-3-Clause

@@ -313,6 +313,15 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use KSP&apos;s Stock Toolbar.
+        /// </summary>
+        internal static string UseStockToolbar {
+            get {
+                return ResourceManager.GetString("UseStockToolbar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         internal static string ViewTypeAll {
