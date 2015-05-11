@@ -142,6 +142,11 @@ namespace PartWizard
 
                 GUILayout.BeginVertical();
 
+                bool blizzyToolbar = PartWizardPlugin.ToolbarIsBlizzy;
+                blizzyToolbar = GUILayout.Toggle(blizzyToolbar, "Use Blizzy Toolbar", GUILayout.Width(200));
+                if (blizzyToolbar != PartWizardPlugin.ToolbarIsBlizzy)
+                    PartWizardPlugin.ToolbarTypeToggleActive = true;
+
                 #region Display Mode Control
 
                 GUILayout.BeginHorizontal();
