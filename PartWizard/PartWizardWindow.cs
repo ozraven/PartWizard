@@ -142,10 +142,14 @@ namespace PartWizard
 
                 GUILayout.BeginVertical();
 
-                bool blizzyToolbar = PartWizardPlugin.ToolbarIsBlizzy;
-                blizzyToolbar = GUILayout.Toggle(blizzyToolbar, "Use Blizzy Toolbar", GUILayout.Width(200));
-                if (blizzyToolbar != PartWizardPlugin.ToolbarIsBlizzy)
-                    PartWizardPlugin.ToolbarTypeToggleActive = true;
+                // If Blizzy's toolbar is available, give the user the option to pick the stock toolbar.
+                if (ToolbarManager.ToolbarAvailable)
+                {
+                    bool stockToolbar = PartWizardPlugin.ToolbarIsStock;
+                    stockToolbar = GUILayout.Toggle(stockToolbar, "Use KSP's Stock Toolbar", GUILayout.Width(200));
+                    if (stockToolbar != PartWizardPlugin.ToolbarIsStock)
+                        PartWizardPlugin.ToolbarTypeToggleActive = true;
+                }
 
                 #region Display Mode Control
 
