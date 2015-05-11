@@ -267,17 +267,7 @@ namespace PartWizard
                 GUILayout.EndHorizontal();
 
                 GUILayout.EndVertical();
-            }
-            catch(Exception)
-            {
-                highlight.CancelTracking();
-
-                throw;
-            }
-            finally
-            {
-                GUI.DragWindow();
-
+                
                 if(this.Visible && this.mouseOver)
                 {
                     this.highlight.EndTracking();
@@ -286,6 +276,21 @@ namespace PartWizard
                 {
                     this.highlight.CancelTracking();
                 }
+            }
+            catch(Exception e)
+            {
+                Log.Write("SymmetryEditorWindow.OnRender() unexpected exception caught.");
+
+                Log.Write(e.Message);
+                Log.Write(e.StackTrace);
+
+                this.highlight.CancelTracking();
+
+                throw;
+            }
+            finally
+            {
+                GUI.DragWindow();
             }
         }
     }
