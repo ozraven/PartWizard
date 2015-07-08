@@ -73,16 +73,16 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\1.0.2\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.4\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\1.0.2\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.4\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\KSPSDK\1.0.2\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\KSPSDK\1.0.4\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

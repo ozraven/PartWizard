@@ -416,9 +416,12 @@ namespace PartWizard
                     {
                         foreach(Part part in parts)
                         {
-                            Log.Write("Buying part {0}.", part.name);
-                            
-                            PartWizard.Buy(part);
+                            if(PartWizard.IsBuyable(part))
+                            {
+                                Log.Write("Buying part {0}.", part.name);
+
+                                PartWizard.Buy(part, false);
+                            }
                         }
 
                         PartWizard.SaveGame();
