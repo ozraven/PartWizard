@@ -137,6 +137,12 @@ namespace PartWizard
             {
                 GameEvents.onGUIApplicationLauncherReady.Remove(OnGUIAppLauncherReady);
                 GameEvents.onGUIApplicationLauncherDestroyed.Remove(OnGUIAppLauncherDestroyed);
+
+                if(this.partWizardStockButton != null)
+                {
+                    ApplicationLauncher.Instance.RemoveModApplication(this.partWizardStockButton);
+                    this.partWizardStockButton = null;
+                }
             }
             else
             {
@@ -177,7 +183,8 @@ namespace PartWizard
         private void OnGUIAppLauncherReady()
         {
             // Setup PW Stock Toolbar button
-            if(HighLogic.LoadedSceneIsEditor && partWizardStockButton == null)
+            bool hidden = false;
+            if(ApplicationLauncher.Ready && (partWizardStockButton == null || !ApplicationLauncher.Instance.Contains(partWizardStockButton, out hidden)))
             {
                 partWizardStockButton = ApplicationLauncher.Instance.AddModApplication(
                     ToggleVisibility,
