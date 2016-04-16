@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-
+using KSP.UI.Screens;
 using UnityEngine;
 
 using Localized = PartWizard.Resources.Strings;
