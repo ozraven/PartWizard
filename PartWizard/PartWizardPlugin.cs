@@ -26,7 +26,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
-
+using KSP.UI.Screens;
 using UnityEngine;
 
 namespace PartWizard

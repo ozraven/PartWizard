@@ -1,0 +1,3 @@
+﻿1.  Add way to only display specific class of parts
+2.  Add way to only display specific parts (by name)
+3.  Display parts with specific resource
