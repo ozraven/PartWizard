@@ -132,12 +132,6 @@
     </Compile>
     <Compile Include="Configuration.cs" />
     <Compile Include="SymmetryEditorWindow.cs" />
-    <Compile Include="Test\MockEditorLogic.cs" />
-    <Compile Include="Test\MockGameEvents.cs" />
-    <Compile Include="Test\MockIncompleteException.cs" />
-    <Compile Include="Test\MockPart.cs" />
-    <Compile Include="Test\MockShipConstruct.cs" />
-    <Compile Include="Test\MockStaging.cs" />
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="GUIWindow.cs" />
   </ItemGroup>

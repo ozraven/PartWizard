@@ -33,13 +33,6 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-    using EditorLogic = global::PartWizard.Test.MockEditorLogic;
-    using ShipConstruct = global::PartWizard.Test.MockShipConstruct;
-    using GameEvents = global::PartWizard.Test.MockGameEvents;
-#endif
-
     internal sealed class PartWizardWindow : GUIWindow
     {
         private static readonly Rect DefaultDimensions = new Rect(280, 160, 300, 400);

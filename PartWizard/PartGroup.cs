@@ -30,10 +30,6 @@ using UnityEngine;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-#endif
-
     /// <summary>
     /// A collection of parts with some convenient methods for managing several PartGroup objects.
     /// </summary>

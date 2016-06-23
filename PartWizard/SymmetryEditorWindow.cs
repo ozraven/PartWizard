@@ -33,10 +33,6 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-#endif
-
     internal sealed class SymmetryEditorWindow : GUIWindow
     {
         private const float DefaultWidth = 300;

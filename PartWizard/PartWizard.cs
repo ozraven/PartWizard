@@ -32,12 +32,6 @@ using Localized = PartWizard.Resources.Strings;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-    using EditorLogic = global::PartWizard.Test.MockEditorLogic;
-    using Staging = global::PartWizard.Test.MockStaging;
-#endif
-
     /// <summary>
     /// Provides the addon's part manipulation capabilities.
     /// </summary>

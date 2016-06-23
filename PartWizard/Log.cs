@@ -33,10 +33,6 @@ using UnityEngine;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-#endif
-
     internal static class Log
     {
         private const string Prefix = "[PartWizard]";

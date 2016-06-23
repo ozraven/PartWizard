@@ -32,10 +32,6 @@ using HighlightingSystem;
 
 namespace PartWizard
 {
-#if TEST
-    using Part = global::PartWizard.Test.MockPart;
-#endif
-
     /// <summary>
     /// A class for modifying and restoring the state of globally shared resource, such as the highlighting state of Part objects, in this case.
     /// </summary>
