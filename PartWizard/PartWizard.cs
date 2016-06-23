@@ -67,7 +67,7 @@ namespace PartWizard
             EditorLogic.DeletePart(part);
 
             // Finally, poke the staging logic to sort out any changes due to deleting this part.
-            Staging.SortIcons();
+            PartWizard.UpdateStaging();
         }
 
         public static bool IsBuyable(Part part)
@@ -184,7 +184,7 @@ namespace PartWizard
             }
 
             // Poke the staging logic to sort out any changes due to modifying the symmetry of this part.
-            Staging.SortIcons();
+            PartWizard.UpdateStaging();
         }
 
         /// <summary>
@@ -474,6 +474,16 @@ namespace PartWizard
             }
 
             return result;
+        }
+
+        private static void UpdateStaging()
+        {
+            foreach(StageGroup stageGroup in StageManager.Instance.Stages)
+            {
+                stageGroup.Reset();
+            }
+            StageManager.Instance.SortIcons(true);
+            StageManager.Instance.UpdateStageGroups(false);
         }
     }
 }
