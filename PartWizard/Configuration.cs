@@ -134,10 +134,15 @@ namespace PartWizard
             Configuration.SetValue(rectNode, KeyRectHeight, value.height);
         }
 
+        public static void SetValue(string key, bool value)
+        {
+            Configuration.SetValue(key, value.ToString().ToLowerInvariant());
+        }
+
         public static void SetValue(string key, string value)
         {
             Configuration.ValidateKeyName(key);
-
+            
             ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
 
             if(settingsNode.HasValue(key))
@@ -160,6 +165,29 @@ namespace PartWizard
             if(!float.TryParse(node.GetValue(key), out result))
             {
                 result = defaultValue;
+            }
+
+            return result;
+        }
+
+        private static bool GetValue(ConfigNode node, string key, bool defaultValue)
+        {
+            if(node == null)
+                throw new ArgumentNullException("node");
+
+            // key is validated by public facing methods.
+
+            bool result = default(bool);
+
+            if(!bool.TryParse(node.GetValue(key), out result))
+            {
+                Log.Write("Configuration.GetValue(ConfigNode, string, bool) parse failed, result: {0}", result);
+
+                result = defaultValue;
+            }
+            else
+            {
+                Log.Write("Configuration.GetValue(ConfigNode, string, bool) parse OK, result: {0}", result);
             }
 
             return result;
@@ -190,7 +218,7 @@ namespace PartWizard
 
             ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
 
-            if(settingsNode.HasNode(key))
+            if(settingsNode != null && settingsNode.HasNode(key))
             {
                 ConfigNode rectNode = settingsNode.GetNode(key);
 
@@ -203,15 +231,31 @@ namespace PartWizard
             return result;
         }
 
+        public static bool GetValue(string key, bool defaultValue)
+        {
+            Configuration.ValidateKeyName(key);
+
+            bool result = defaultValue;
+
+            ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
+            
+            if(settingsNode != null && settingsNode.HasValue(key))
+            {
+                result = Configuration.GetValue(settingsNode, key, defaultValue);
+            }
+
+            return result;
+        }
+
         public static string GetValue(string key, string defaultValue)
         {
             Configuration.ValidateKeyName(key);
 
             string result = defaultValue;
 
-            ConfigNode settingsNode = Configuration.Root.GetNode(key);
+            ConfigNode settingsNode = Configuration.Root.GetNode(Configuration.SettingsNodeName);
 
-            if(settingsNode != null)
+            if(settingsNode != null && settingsNode.HasValue(key))
             {
                 result = Configuration.GetValue(settingsNode, key, defaultValue);
             }
