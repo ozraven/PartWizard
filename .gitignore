@@ -7,3 +7,4 @@ Debug
 /PartWizard/obj/Test
 /Release*
 *.userprefs
+.vs/
