@@ -110,28 +110,9 @@ namespace PartWizard
 
         public static void Write(string format, params object[] args)
         {
-            UnityEngine.Debug.Log(string.Format(CultureInfo.InvariantCulture, "{0} {1}", Log.GeneratePrefix(), string.Format(CultureInfo.InvariantCulture, format, args)));
+            UnityEngine.Debug.Log(string.Format(CultureInfo.InvariantCulture, "{0} {1}", Log.Prefix, string.Format(CultureInfo.InvariantCulture, format, args)));
         }
-
-        private static string GeneratePrefix()
-        {
-            string result = default(string);
-
-            TimeSpan elapsed = DateTime.Now - Log.start;
-
-            // In the event the game has been running for days, handle it especially - days is the highest increment of time handled.
-            if(elapsed.TotalDays < 1)
-            {
-                result = string.Format(CultureInfo.InvariantCulture, "{0} [{1:00}:{2:00}:{3:00}.{4:000}]", Log.Prefix, elapsed.Hours, elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds);
-            }
-            else
-            {
-                result = string.Format(CultureInfo.InvariantCulture, "{0} [{1:00}:{2:00}:{3:00}:{4:00}.{5:000}]", Log.Prefix, Convert.ToInt32(Math.Floor(elapsed.TotalDays)), elapsed.Hours, elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds);
-            }
-
-            return result;
-        }
-
+        
         public static void WriteSymmetryReport(Part part)
         {
 #if DEBUG
