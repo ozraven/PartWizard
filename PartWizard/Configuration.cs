@@ -24,6 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.IO;
 
 using UnityEngine;
 
@@ -53,7 +54,8 @@ namespace PartWizard
         //     toolbarIconInactive = PartWizard/Icons/partwizard_inactive_toolbar_24_icon
         // }
 
-        private const string File = "GameData/PartWizard/partwizard.cfg";
+        private const string File = "GameData/PartWizard/PluginData/PartWizard.cfg";
+        private const string OldFile = "GameData/PartWizard/partwizard.cfg";
         private const string SettingsNodeName = "PART_WIZARD_SETTINGS";
         private const string KeyRectX = "x";
         private const string KeyRectY = "y";
@@ -61,6 +63,7 @@ namespace PartWizard
         private const string KeyRectHeight = "height";
 
         private static readonly string Path = System.IO.Path.Combine(KSPUtil.ApplicationRootPath, File);
+        private static readonly string OldPath = System.IO.Path.Combine(KSPUtil.ApplicationRootPath, OldFile);
         private static readonly ConfigNode Root = ConfigNode.Load(Configuration.Path) ?? new ConfigNode();
 
         public static readonly GUILayoutOption PartActionButtonWidth = GUILayout.Width(22);
@@ -80,6 +83,18 @@ namespace PartWizard
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static Configuration()
         {
+            if(System.IO.File.Exists(OldPath))
+            {
+                try
+                {
+                    System.IO.File.Delete(OldPath);
+                }
+                catch
+                {
+                    Log.Write("Unable to delete old configuration file.");
+                }
+            }
+
             if(Configuration.Root.GetNode(Configuration.SettingsNodeName) == null)
             {
                 Configuration.Root.AddNode(Configuration.SettingsNodeName);
