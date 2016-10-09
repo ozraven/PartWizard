@@ -28,7 +28,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-using HighlightingSystem;
+//using HighlightingSystem;
 
 namespace PartWizard
 {
@@ -286,9 +286,9 @@ namespace PartWizard
             part.SetHighlightColor(color);
             part.SetHighlight(true, recursive);
             
-            Highlighter highlighter = part.highlighter;
-            highlighter.SeeThroughOn();
-            highlighter.ConstantOn(color);
+           // Highlighter highlighter = part.highlighter;
+            part.highlighter.SeeThroughOn();
+            part.highlighter.ConstantOn(color);
         }
 
         private static void Restore(Dictionary<Part, bool> parts)
@@ -310,9 +310,9 @@ namespace PartWizard
                 part.SetHighlightDefault();
                 part.SetHighlight(false, recursive);
 
-                Highlighter highlighter = part.highlighter;
-                highlighter.ConstantOff();
-                highlighter.SeeThroughOff();
+                //Highlighter highlighter = part.highlighter;
+                part.highlighter.ConstantOff();
+                part.highlighter.SeeThroughOff();
             }
             catch(NullReferenceException)
             {

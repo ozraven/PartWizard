@@ -27,6 +27,11 @@ http://forum.kerbalspaceprogram.com/threads/80124/
   * In career or science games, shows all parts that are currently unavailable.
     * Eligible[4] parts can be purchased directly from Part Wizard.
 * Allows selecting parts from the list for action group assignments.
+ 
+ Following added by LinuxGuruGamer
+* Shows bad struts & bad fuel lines in red, all other parts now in green
+* Can display specific category(s) of parts
+* Can display only parts with specified resources
 
 [1] Parts eligible for deleting via Part Wizard are those that are not the "root" part and have no attached parts.
 [2] Symmetry editing modifies the designated part, its counter parts and all symmetrical child parts.
@@ -55,11 +60,20 @@ The Part Wizard toolbar icon is only available in the Vehicle Assembly Building 
 
 	   i. Sandbox Games
 	   
-	      There are two buttons at the top of the interface, "All" and "Hidden". These buttons control the current viewing mode, which is indicated by a depressed button with green text. "All" mode shows all of the current vessel's parts in the list. "Hidden" mode shows only those parts that have been hidden from the Parts List, as designated by either the part's configuration (.cfg) file or as modified by the Module Manager [1] plugin (or similar). Hidden mode is intended to allow the easy locating of parts that may have been made obsolete by the author.
+	      There are four buttons at the top of the interface, "All", "Hidden", "Categories", and "Resources". These buttons control the current viewing mode, which is indicated by a depressed button with green text. 
+		  "All" mode shows all of the current vessel's parts in the list. 
+		  "Hidden" mode shows only those parts that have been hidden from the Parts List, as designated by either the part's configuration (.cfg) file or as modified by the Module Manager [1] plugin (or similar). Hidden mode is intended to allow the easy locating of parts that may have been made obsolete by the author.  
+		  "Categories" mode is intended to show a list of part categories with toggles for each; if toggled, then parts in the toggled categories will be shown in the "All" & "Hidden" viewing mode. 
+		  "Resources" mode will show a list of all the different resources on the current vessel; if toggled, then parts in the toggled resources will be shown in the "All" & "Hidden" viewing mode.  There is a special line listed, called "Parts without resources", which covers those parts which don't have any resources.
 
 	   ii. Career and Science Games
 	   
-	      There are three buttons at the top of the interface: "All", "Hidden" and "Unavailable". These buttons control the current viewing mode, which is indicated by a depressed button with green text. "All" mode shows all of the current vessel's parts in the list. "Hidden" mode shows only those parts that have been hidden from the Parts List, as designated by either the part's configuration (.cfg) file or as modifid by the Module Manager [1] plugin (or similar). Hidden mode is intended to allow the easy locating of parts that may have been made obsolete by the author. "Unavailable" mode shows only the parts that aren't available due to not having researched the relevant technology and/or the part has not yet been purchased. The Unavailable mode will allow direct purchasing of parts that your space program is currently qualified to use, so long as the necessary funds are available. Additionally, in Unavailable mode, when possible there is a button at the bottom of the list that allows you to purchase all parts with a single command. NOTE: When parts are purchased your game will be saved immediately.
+	      There are five buttons at the top of the interface: "All", "Hidden",  "Categories", and "Resources" and "Unavailable". These buttons control the current viewing mode, which is indicated by a depressed button with green text. 
+		  "All" mode shows all of the current vessel's parts in the list. 
+		  "Hidden" mode shows only those parts that have been hidden from the Parts List, as designated by either the part's configuration (.cfg) file or as modifid by the Module Manager [1] plugin (or similar). Hidden mode is intended to allow the easy locating of parts that may have been made obsolete by the author. 
+		  "Categories" mode is intended to show a list of part categories with toggles for each; if toggled, then parts in the toggled categories will be shown in the "All" & "Hidden" viewing mode. 
+		  "Resources" mode will show a list of all the different resources on the current vessel; if toggled, then parts in the toggled resources will be shown in the "All" & "Hidden" viewing mode.  There is a special line listed, called "Parts without resources", which covers those parts which don't have any resources.
+		  "Unavailable" mode shows only the parts that aren't available due to not having researched the relevant technology and/or the part has not yet been purchased. The Unavailable mode will allow direct purchasing of parts that your space program is currently qualified to use, so long as the necessary funds are available. Additionally, in Unavailable mode, when possible there is a button at the bottom of the list that allows you to purchase all parts with a single command. NOTE: When parts are purchased your game will be saved immediately.
 		  
 	c. Deleting Parts
 
