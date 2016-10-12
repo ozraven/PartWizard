@@ -226,4 +226,19 @@
   <data name="UseStockToolbar" xml:space="preserve">
     <value>Use KSP's Stock Toolbar</value>
   </data>
+  <data name="AvailableResources" xml:space="preserve">
+    <value>Resources</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ShowPartsWithoutResources" xml:space="preserve">
+    <value>Parts without resources</value>
+  </data>
+  <data name="ViewAll" xml:space="preserve">
+    <value>View All</value>
+  </data>
+  <data name="ViewTypeCategories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
 </root>

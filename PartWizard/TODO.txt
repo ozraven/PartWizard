@@ -1,3 +1,6 @@
-﻿* (linuxgurugamer) Add way to only display specific class of parts.
-* (linuxgurugamer) Add way to only display specific parts (by name).
-* (linuxgurugamer) Display parts with specific resource.
+﻿* (linuxgurugamer) Add way to only display specific parts (by name).
+
+DONE	* (linuxgurugamer) Add way to only display specific class of parts. 
+DONE	* (linuxgurugamer) Display parts with specific resource.
+DONE	* (linuxgurugamer) fix bug where initial entry into editor had button set to active
+DON		* (linuxgurugamer) Added color to bad struts & fuel lines
