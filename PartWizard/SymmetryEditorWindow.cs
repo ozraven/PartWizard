@@ -215,7 +215,8 @@ namespace PartWizard
 
                 GUILayout.EndScrollView();
 
-                GUILayout.Space(4);
+                // Push everything above this up, otherwise it will be centered vertically.
+                GUILayout.FlexibleSpace();
 
                 GUILayout.BeginHorizontal();
 
