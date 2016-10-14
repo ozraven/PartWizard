@@ -162,12 +162,12 @@
     <comment>{0} = part name</comment>
   </data>
   <data name="StatusLabelSingularTextFormat" xml:space="preserve">
-    <value>{0} part.</value>
-    <comment>{0} = part count.</comment>
+    <value>{0} part, {1:N0} hidden.</value>
+    <comment>{0} = part count, {1} = hidden part count.</comment>
   </data>
   <data name="StatusLabelSingularTooltipTextFormat" xml:space="preserve">
-    <value>{0:N0} part, {1}.</value>
-    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
+    <value>{0:N0} part, {2:N0} hidden, {1}.</value>
+    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string, {2} = hidden part count.</comment>
   </data>
   <data name="ViewTypeAll" xml:space="preserve">
     <value>All</value>
@@ -195,12 +195,12 @@
     <value>Remove Group</value>
   </data>
   <data name="StatusLabelPluralTextFormat" xml:space="preserve">
-    <value>{0:N0} parts.</value>
-    <comment>{0} = part count.</comment>
+    <value>{0:N0} parts, {1:N0} hidden.</value>
+    <comment>{0} = part count, {1} = hidden part count.</comment>
   </data>
   <data name="StatusLabelPluralTooltipTextFormat" xml:space="preserve">
-    <value>{0:N0} parts, {1}.</value>
-    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string.</comment>
+    <value>{0:N0} parts {2:N0} hidden, {1}.</value>
+    <comment>{0} = part count, {1} = Unity's current GUI.tooltip string, {2} = hidden part count.</comment>
   </data>
   <data name="DeletePartPluralDescription" xml:space="preserve">
     <value>delete highlighted parts</value>

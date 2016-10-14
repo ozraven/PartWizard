@@ -286,7 +286,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0:N0} parts..
+        ///   Looks up a localized string similar to {0:N0} parts, {1:N0} hidden..
         /// </summary>
         internal static string StatusLabelPluralTextFormat {
             get {
@@ -295,7 +295,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0:N0} parts, {1}..
+        ///   Looks up a localized string similar to {0:N0} parts {2:N0} hidden, {1}..
         /// </summary>
         internal static string StatusLabelPluralTooltipTextFormat {
             get {
@@ -304,7 +304,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} part..
+        ///   Looks up a localized string similar to {0} part, {1:N0} hidden..
         /// </summary>
         internal static string StatusLabelSingularTextFormat {
             get {
@@ -313,7 +313,7 @@ namespace PartWizard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0:N0} part, {1}..
+        ///   Looks up a localized string similar to {0:N0} part, {2:N0} hidden, {1}..
         /// </summary>
         internal static string StatusLabelSingularTooltipTextFormat {
             get {

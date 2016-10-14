@@ -40,6 +40,8 @@ namespace PartWizard
 
         private readonly Color TooltipLabelColor = Color.yellow;
 
+        private static readonly Color DefaultPartNameColor = Color.white;
+
         private const string WindowPositionConfigurationName = "PART_WIZARD_WINDOW";
 
         private GUIStyle tooltipLabelStyle;
@@ -60,7 +62,7 @@ namespace PartWizard
         private ViewType viewType = ViewType.All;
 
         private bool[] visibleCategories = new bool[Enum.GetNames(typeof(PartCategories)).Length];
-        private List<string> availableResources = new List<string>();
+        private List<string> availableResources = null;
         private List<string> visibleResources = new List<string>();
 
         private GUIStyle selectedViewTypeStyle;
@@ -69,20 +71,22 @@ namespace PartWizard
 
         private GUIContent[] viewTypeContents;
 
+        private GUIStyle labelStyle;
+        private GUIStyle toggleStyle;
+
         private SymmetryEditorWindow symmetryEditorWindow;
 
         void InitAvailableResources()
         {
-            availableResources = new List<string>();
-            availableResources.Add(Localized.ShowPartsWithoutResources);
+            this.availableResources = new List<string>();
+            this.availableResources.Add(Localized.ShowPartsWithoutResources);
         }
 
         private void GetVesselResources()
         {
             List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
-            //availableResources = new List<string>();
-            InitAvailableResources();
 
+            this.InitAvailableResources();
 
             foreach(Part p in parts)
             {
@@ -103,18 +107,24 @@ namespace PartWizard
         private void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)
         {
             Debug.Log("OnPartAttach");
-            foreach (PartResource pr in e.host.Resources)
+
+            foreach(PartResource partResource in e.host.Resources)
             {
-                if (!availableResources.Contains(pr.resourceName))
+                if(!availableResources.Contains(partResource.resourceName))
                 {
-                    availableResources.Add(pr.resourceName);
-                    if (!visibleResources.Contains(pr.resourceName))
-                        visibleResources.Add(pr.resourceName);
+                    availableResources.Add(partResource.resourceName);
+
+                    if(!visibleResources.Contains(partResource.resourceName))
+                    {
+                        visibleResources.Add(partResource.resourceName);
                     }
                 }
+            }
+
             availableResources.Sort();
             visibleResources.Sort();
         }
+
         private void onEditorPodPicked(Part part)
         {
             foreach(PartResource pr in part.Resources)
@@ -140,8 +150,8 @@ namespace PartWizard
         void OnEditorStarted()
         {
             visibleResources.Clear();
-            //availableResources.Clear();
-            InitAvailableResources();
+
+            this.InitAvailableResources();
         }
 
         public PartWizardWindow(string name, string version)
@@ -171,8 +181,25 @@ namespace PartWizard
             this.highlight = new HighlightTracker2();
 
             for(int i = 0; i < visibleCategories.Length; i++)
+            {
                 visibleCategories[i] = true;
             }
+
+            labelStyle = new GUIStyle(HighLogic.Skin.label);
+            
+            labelStyle.normal.textColor = Color.green;
+
+            toggleStyle = new GUIStyle(HighLogic.Skin.toggle);
+
+            toggleStyle.normal.textColor = Color.green;
+            toggleStyle.active.textColor = Color.green;
+            toggleStyle.focused.textColor = Color.green;
+            toggleStyle.hover.textColor = Color.green;
+            toggleStyle.onActive.textColor = Color.green;
+            toggleStyle.onFocused.textColor = Color.green;
+            toggleStyle.onHover.textColor = Color.green;
+            toggleStyle.onNormal.textColor = Color.green;
+        }
 
         public override void Hide()
         {
@@ -213,15 +240,14 @@ namespace PartWizard
 
         private void OnPartRemove(GameEvents.HostTargetAction<Part, Part> e)
         {
-            //OnPartAttach(e);
             Debug.Log("OnPartRemove");
 
             foreach(PartResource pr in e.target.Resources)
             {
                 availableResources.Remove(pr.resourceName);
-                if (visibleResources.Contains(pr.resourceName))
                 visibleResources.Remove(pr.resourceName);
             }
+
             availableResources.Sort();
 
             if(this.symmetryEditorWindow.Visible)
@@ -232,30 +258,6 @@ namespace PartWizard
                 }
             }
         }
-
-        //
-        // Define these here to avoid the constant garbage collection on each loop, otherwise
-        // every time  OnRender is called, these would all be allocated and then deleted
-        // 
-        //
-        GUIStyle lstyle = new GUIStyle(HighLogic.Skin.label);
-        GUIStyle tstyle = new GUIStyle(HighLogic.Skin.toggle);
-        bool b, b1;
-        bool groupMouseOver = false;
-        bool stockToolbar;
-        bool result;
-        bool deleted = false;                   // Will be set to true if the delete button was pressed.
-        bool bought = false;                    // Will be set to true if the buy button was pressed.
-
-        bool breakSymmetryMouseOver = false;    // Will be set to true if the mouse is over the part's break symmetry button.
-        bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
-        bool buyButtonMouseOver = false;        // Will be set to true if the mouse is over the part's buy button.
-
-        string deleteTooltip = default(string);
-        string buyTooltip = default(string);
-
-        int buyableEntryCost = 0;
-        bool enableBulkBuy = false;
 
         public override void OnRender()
         {
@@ -270,7 +272,7 @@ namespace PartWizard
                 // If Blizzy's toolbar is available, give the user the option to pick the stock toolbar.
                 if(ToolbarManager.ToolbarAvailable)
                 {
-                    stockToolbar = PartWizardPlugin.ToolbarIsStock;
+                    bool stockToolbar = PartWizardPlugin.ToolbarIsStock;
                     stockToolbar = GUILayout.Toggle(stockToolbar, Localized.UseStockToolbar, GUILayout.Width(200));
                     if(stockToolbar != PartWizardPlugin.ToolbarIsStock)
                     {
@@ -294,9 +296,8 @@ namespace PartWizard
                 }
                 else if(this.viewType == ViewType.Unavailable)
                 {
-                    parts = parts.FindAll((p) =>
-                    {
-                        result = false;
+                    parts = parts.FindAll((p) => {
+                        bool result = false;
 
                         // Get the R&D technology state for the current part.
                         ProtoTechNode techState = ResearchAndDevelopment.Instance.GetTechState(p.partInfo.TechRequired);
@@ -333,84 +334,92 @@ namespace PartWizard
                 this.scrollPosition = GUILayout.BeginScrollView(this.scrollPosition, false, false);
 
                 int totalEntryCost = 0;
-                lstyle.normal.textColor = Color.green;
-
-                tstyle.normal.textColor = Color.green;
-                tstyle.active.textColor = Color.green;
-                tstyle.focused.textColor = Color.green;
-                tstyle.hover.textColor = Color.green;
-                tstyle.onActive.textColor = Color.green;
-                tstyle.onFocused.textColor = Color.green;
-                tstyle.onHover.textColor = Color.green;
-                tstyle.onNormal.textColor = Color.green;
-
-
+                int visiblePartCount = 0;
 
                 if(this.viewType == ViewType.Category)
                 {
                     if(GUILayout.Button(Localized.ViewAll))
                     {
                         for(int i = 0; i < visibleCategories.Length; i++)
+                        {
                             visibleCategories[i] = true;
+                        }
                     }
                     if(GUILayout.Button(Localized.Clear))
                     {
                         for(int i = 0; i < visibleCategories.Length; i++)
+                        {
                             visibleCategories[i] = false;
-
+                        }
                     }
 
-                    for(PartCategories pc = PartCategories.Propulsion; pc < PartCategories.Coupling; pc++)
+                    for(PartCategories partCategories = PartCategories.Propulsion; partCategories < PartCategories.Coupling; partCategories++)
                     {
-                        visibleCategories[(int)pc] = GUILayout.Toggle(visibleCategories[(int)pc], pc.ToString(), tstyle);
+                        visibleCategories[(int)partCategories] = GUILayout.Toggle(visibleCategories[(int)partCategories], partCategories.ToString(), toggleStyle);
                     }
                 }
-                else
-                     if(this.viewType == ViewType.Resources)
+                else if(this.viewType == ViewType.Resources)
                 {
                     if(GUILayout.Button(Localized.ViewAll))
-                        visibleResources = new List<string>(availableResources);
-
-                    if(GUILayout.Button(Localized.Clear))
-                        visibleResources.Clear();
-                    foreach(string s in availableResources)
                     {
-                        b = visibleResources.Contains(s);
-                        b1 = GUILayout.Toggle(b, s, tstyle);
-                        if(b && !b1)
-                            visibleResources.Remove(s);
-                        if(!b && b1)
-                            visibleResources.Add(s);
+                        visibleResources = new List<string>(availableResources);
                     }
 
+                    if(GUILayout.Button(Localized.Clear))
+                    {
+                        visibleResources.Clear();
+                    }
+
+                    foreach(string availableResource in availableResources)
+                    {
+                        bool resourceVisible = visibleResources.Contains(availableResource);
+
+                        bool currentResourceVisible = GUILayout.Toggle(resourceVisible, availableResource, toggleStyle);
+
+                        if(resourceVisible && !currentResourceVisible)
+                        {
+                            visibleResources.Remove(availableResource);
+                        }
+
+                        if(!resourceVisible && currentResourceVisible)
+                        {
+                            visibleResources.Add(availableResource);
+                        }
+                    }
                 }
                 else
+                {
                     foreach(Part part in parts)
+                    {
+                        // Reset part name label color to default; some conditions may change the color to indicate various things.
+                        labelStyle.normal.textColor = PartWizardWindow.DefaultPartNameColor;
+
+                        // Check if this part's category is currently visible.
                         if(visibleCategories[(int)part.partInfo.category])
                         {
-                            b = false;
+                            // The part's category is visible, now check resource conditions to determine final visibility.
+                            bool resourceVisible = false;
 
-                            lstyle.normal.textColor = Color.green;
-
-                            //if (viewType == ViewType.Unavailable)
-                            //    b = true;
-                            //else
+                            if(visibleResources.Contains(Localized.ShowPartsWithoutResources) && part.Resources.Count == 0)
                             {
-                                if(visibleResources.Contains(" Parts without resources") && part.Resources.Count == 0)
-                                    b = true;
-                                else
-                                    foreach(PartResource pr in part.Resources)
-                                    {
-                                        if(visibleResources.Contains(pr.resourceName))
-                                        {
-                                            b = true;
-                                            break;
-                                        }
-                                    }
+                                resourceVisible = true;
                             }
-                            if(b)
+                            else
+                            {
+                                foreach(PartResource partResource in part.Resources)
+                                {
+                                    if(visibleResources.Contains(partResource.resourceName))
+                                    {
+                                        resourceVisible = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(resourceVisible)
                             {
                                 totalEntryCost += part.partInfo.entryCost;
+                                visiblePartCount++;
 
                                 GUIControls.BeginMouseOverHorizontal();
 
@@ -420,16 +429,18 @@ namespace PartWizard
 
                                 if(EditorLogic.fetch.editorScreen != EditorScreen.Actions)
                                 {
-                                    if(part.name == "fuelLine" || part.name == "strutConnector")
+                                    
+                                    // Check compound parts for integrity.
+                                    if(part is CompoundPart)
                                     {
-                                        CompoundPart p = (CompoundPart)part;
-                                        if(p.attachState == CompoundPart.AttachState.Detached || p.attachState == CompoundPart.AttachState.Attaching || p.target == p.parent)
+                                        CompoundPart compoundPart = (CompoundPart)part;
+                                        if(compoundPart.attachState == CompoundPart.AttachState.Detached || compoundPart.attachState == CompoundPart.AttachState.Attaching || compoundPart.target == compoundPart.parent)
                                         {
-                                            lstyle.normal.textColor = Color.red;
+                                            labelStyle.normal.textColor = Color.red;
                                         }
-
                                     }
-                                    GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name), lstyle);
+
+                                    GUILayout.Label(new GUIContent(part.partInfo.title, part.partInfo.name), labelStyle);
                                 }
                                 else
                                 {
@@ -452,20 +463,21 @@ namespace PartWizard
 
                                 #endregion
 
+                                // Adds space between the part name and the buttons (if any) associated with the part.
                                 GUILayout.FlexibleSpace();
 
                                 // Only enable the following buttons if there is no actively selected part, but we want to have them drawn.
                                 GUI.enabled = EditorLogic.SelectedPart == null;
 
-                                deleted = false;                   // Will be set to true if the delete button was pressed.
-                                bought = false;                    // Will be set to true if the buy button was pressed.
+                                bool deleted = false;                   // Will be set to true if the delete button was pressed.
+                                bool bought = false;                    // Will be set to true if the buy button was pressed.
 
-                                breakSymmetryMouseOver = false;    // Will be set to true if the mouse is over the part's break symmetry button.
-                                deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
-                                buyButtonMouseOver = false;        // Will be set to true if the mouse is over the part's buy button.
+                                bool breakSymmetryMouseOver = false;    // Will be set to true if the mouse is over the part's break symmetry button.
+                                bool deleteButtonMouseOver = false;     // Will be set to true if the mouse is over the part's delete button.
+                                bool buyButtonMouseOver = false;        // Will be set to true if the mouse is over the part's buy button.
 
-                                deleteTooltip = default(string);
-                                buyTooltip = default(string);
+                                string deleteTooltip = default(string);
+                                string buyTooltip = default(string);
 
                                 if(this.viewType == ViewType.All || this.viewType == ViewType.Hidden)
                                 {
@@ -540,7 +552,7 @@ namespace PartWizard
 
                                 GUI.enabled = true;
 
-                                // bool groupMouseOver = false;
+                                bool groupMouseOver = false;
                                 GUIControls.EndMouseOverHorizontal(out groupMouseOver);     // End of row for this part.
 
                                 // If we deleted a part, then just jump out of the loop since the parts list has been modified.
@@ -562,8 +574,7 @@ namespace PartWizard
                                 else if(buyButtonMouseOver)
                                 {
                                     // TODO: Duplicate code!
-                                    buyableParts.ForEach((p) =>
-                                    {
+                                    buyableParts.ForEach((p) => {
                                         if(part.name == p.name)
                                         {
                                             this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
@@ -588,8 +599,7 @@ namespace PartWizard
                                     else
                                     {
                                         // TODO: Duplicate code!
-                                        buyableParts.ForEach((p) =>
-                                        {
+                                        buyableParts.ForEach((p) => {
                                             if(part.name == p.name)
                                             {
                                                 this.highlight.Add(p, Configuration.HighlightColorBuyablePart, false);
@@ -605,6 +615,8 @@ namespace PartWizard
                                 #endregion
                             }
                         }
+                    }
+                }
 
                 GUILayout.EndScrollView();
 
@@ -612,8 +624,8 @@ namespace PartWizard
 
                 if(viewType == ViewType.Unavailable)
                 {
-                    buyableEntryCost = 0;
-                    enableBulkBuy = false;
+                    int buyableEntryCost = 0;
+                    bool enableBulkBuy = false;
 
                     foreach(Part p in parts)
                     {
@@ -643,8 +655,7 @@ namespace PartWizard
                     // TODO: Highlight all parts that will be bought by clicking Buy All.
                     if(buyAllMouseOver)
                     {
-                        buyableParts.ForEach((p) =>
-                        {
+                        buyableParts.ForEach((p) => {
                             this.highlight.Add(p, Configuration.HighlightColorBuyablePart);
                         });
                     }
@@ -665,22 +676,22 @@ namespace PartWizard
                 {
                     if(parts.Count != 1)
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTooltipTextFormat, parts.Count, GUI.tooltip);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
                     }
                     else
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTooltipTextFormat, parts.Count, GUI.tooltip);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
                     }
                 }
                 else
                 {
                     if(parts.Count != 1)
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTextFormat, parts.Count);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTextFormat, visiblePartCount, parts.Count - visiblePartCount);
                     }
                     else
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTextFormat, parts.Count);
+                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTextFormat, visiblePartCount, parts.Count - visiblePartCount);
                     }
                 }
 
