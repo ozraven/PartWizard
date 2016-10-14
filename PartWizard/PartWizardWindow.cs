@@ -87,21 +87,19 @@ namespace PartWizard
             List<Part> parts = EditorLogic.fetch.ship != null ? EditorLogic.fetch.ship.Parts : new List<Part>();
 
             this.InitAvailableResources();
-
-            foreach(Part p in parts)
+            
+            foreach(Part part in parts)
             {
-                foreach(PartResource pr in p.Resources)
+                foreach(PartResource partResource in part.Resources)
                 {
-                    if(!availableResources.Contains(pr.resourceName))
-                        availableResources.Add(pr.resourceName);
+                    if(!this.availableResources.Contains(partResource.resourceName))
+                    {
+                        this.availableResources.Add(partResource.resourceName);
+                    }
                 }
             }
-            availableResources.Sort();
-#if DEBUG
-            Debug.Log("GetVesselResources");
-            foreach(string s in availableResources)
-                Debug.Log("availableResource: " + s);
-#endif
+
+            this.availableResources.Sort();
         }
 
         private void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)
@@ -127,29 +125,33 @@ namespace PartWizard
 
         private void onEditorPodPicked(Part part)
         {
-            foreach(PartResource pr in part.Resources)
+            foreach(PartResource partResource in part.Resources)
             {
-                if(!availableResources.Contains(pr.resourceName))
+                if(!this.availableResources.Contains(partResource.resourceName))
                 {
-                    availableResources.Add(pr.resourceName);
-                    if(!visibleResources.Contains(pr.resourceName))
-                        visibleResources.Add(pr.resourceName);
+                    this.availableResources.Add(partResource.resourceName);
+
+                    if(!this.visibleResources.Contains(partResource.resourceName))
+                    {
+                        this.visibleResources.Add(partResource.resourceName);
+                    }
                 }
             }
-            availableResources.Sort();
-            visibleResources.Sort();
+
+            this.availableResources.Sort();
+            this.visibleResources.Sort();
         }
 
         private void OnShipLoad(ShipConstruct ship, CraftBrowserDialog.LoadType loadType)
         {
-            Debug.Log("OnShipLoad");
-            GetVesselResources();
-            visibleResources = new List<string>(availableResources);
+            this.GetVesselResources();
+
+            this.visibleResources = new List<string>(this.availableResources);
         }
 
         void OnEditorStarted()
         {
-            visibleResources.Clear();
+            this.visibleResources.Clear();
 
             this.InitAvailableResources();
         }
@@ -180,14 +182,14 @@ namespace PartWizard
 
             this.highlight = new HighlightTracker2();
 
-            for(int i = 0; i < visibleCategories.Length; i++)
+            for(int index = 0; index < this.visibleCategories.Length; index++)
             {
-                visibleCategories[i] = true;
+                this.visibleCategories[index] = true;
             }
 
             labelStyle = new GUIStyle(HighLogic.Skin.label);
             
-            labelStyle.normal.textColor = Color.green;
+            labelStyle.normal.textColor = PartWizardWindow.DefaultPartNameColor;
 
             toggleStyle = new GUIStyle(HighLogic.Skin.toggle);
 
@@ -220,35 +222,40 @@ namespace PartWizard
             GameEvents.onEditorStarted.Add(this.OnEditorStarted);
             GameEvents.onEditorPodPicked.Add(this.onEditorPodPicked);
 
-            GetVesselResources();
-            if(visibleResources.Count == 0)
-                visibleResources = new List<string>(availableResources);
+            this.GetVesselResources();
 
+            if(this.visibleResources.Count == 0)
+            {
+                this.visibleResources = new List<string>(availableResources);
+            }
+
+            List<GUIContent> viewTypeContentList = new List<GUIContent>() {
+                new GUIContent(Localized.ViewTypeAll),
+                new GUIContent(Localized.ViewTypeHidden),
+                new GUIContent(Localized.ViewTypeCategories),
+                new GUIContent(Localized.AvailableResources)
+            };
+                        
             if(ResearchAndDevelopment.Instance != null)
             {
-                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden), new GUIContent(Localized.ViewTypeCategories),
-                    new GUIContent(Localized.AvailableResources), new GUIContent(Localized.ViewTypeUnavailable) };
-            }
-            else
-            {
-                this.viewTypeContents = new GUIContent[] { new GUIContent(Localized.ViewTypeAll), new GUIContent(Localized.ViewTypeHidden), new GUIContent(Localized.ViewTypeCategories),
-                    new GUIContent(Localized.AvailableResources)};
+                viewTypeContentList.Add(new GUIContent(Localized.ViewTypeUnavailable));
             }
 
+            this.viewTypeContents = viewTypeContentList.ToArray();
+            
             base.Show();
         }
 
         private void OnPartRemove(GameEvents.HostTargetAction<Part, Part> e)
         {
-            Debug.Log("OnPartRemove");
 
-            foreach(PartResource pr in e.target.Resources)
+            foreach(PartResource partResource in e.target.Resources)
             {
-                availableResources.Remove(pr.resourceName);
-                visibleResources.Remove(pr.resourceName);
+                this.availableResources.Remove(partResource.resourceName);
+                this.visibleResources.Remove(partResource.resourceName);
             }
 
-            availableResources.Sort();
+            this.availableResources.Sort();
 
             if(this.symmetryEditorWindow.Visible)
             {
@@ -428,8 +435,7 @@ namespace PartWizard
                                 #region Part Label
 
                                 if(EditorLogic.fetch.editorScreen != EditorScreen.Actions)
-                                {
-                                    
+                                {                                    
                                     // Check compound parts for integrity.
                                     if(part is CompoundPart)
                                     {
