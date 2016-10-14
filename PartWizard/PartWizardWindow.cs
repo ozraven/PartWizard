@@ -62,9 +62,24 @@ namespace PartWizard
         private ViewType viewType = ViewType.All;
 
         private bool[] visibleCategories = new bool[Enum.GetNames(typeof(PartCategories)).Length];
-        private List<string> availableResources = null;
-        private List<string> visibleResources = new List<string>();
 
+        private class ResourceInfo
+        {
+            private int partCount;
+            private bool visible;
+
+            public ResourceInfo()
+            {
+                this.partCount = 1;
+                this.visible = true;
+            }
+
+            public int PartCount { get { return this.partCount; } set { this.partCount = value; } }
+            public bool Visible { get { return this.visible; } set { this.visible = value; } }
+        }
+
+        private SortedDictionary<string, ResourceInfo> availableResources = null;  // Contains all of the resources available on this vessel.
+        
         private GUIStyle selectedViewTypeStyle;
         private GUIStyle unselectedViewTypeStyle;
         private GUIStyle actionEditorModePartButtonStyle;
@@ -78,8 +93,8 @@ namespace PartWizard
 
         void InitAvailableResources()
         {
-            this.availableResources = new List<string>();
-            this.availableResources.Add(Localized.ShowPartsWithoutResources);
+            this.availableResources = new SortedDictionary<string, ResourceInfo>();
+            this.availableResources.Add(Localized.ShowPartsWithoutResources, new ResourceInfo());
         }
 
         private void GetVesselResources()
@@ -92,67 +107,47 @@ namespace PartWizard
             {
                 foreach(PartResource partResource in part.Resources)
                 {
-                    if(!this.availableResources.Contains(partResource.resourceName))
+                    if(!this.availableResources.ContainsKey(partResource.resourceName))
                     {
-                        this.availableResources.Add(partResource.resourceName);
+                        this.availableResources.Add(partResource.resourceName, new ResourceInfo());
+                    }
+                    else
+                    {
+                        this.availableResources[partResource.resourceName].PartCount++;
                     }
                 }
             }
-
-            this.availableResources.Sort();
         }
 
         private void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)
         {
             Debug.Log("OnPartAttach");
 
-            foreach(PartResource partResource in e.host.Resources)
-            {
-                if(!availableResources.Contains(partResource.resourceName))
-                {
-                    availableResources.Add(partResource.resourceName);
-
-                    if(!visibleResources.Contains(partResource.resourceName))
-                    {
-                        visibleResources.Add(partResource.resourceName);
-                    }
-                }
-            }
-
-            availableResources.Sort();
-            visibleResources.Sort();
+            this.onEditorPodPicked(e.host);
         }
 
         private void onEditorPodPicked(Part part)
         {
             foreach(PartResource partResource in part.Resources)
             {
-                if(!this.availableResources.Contains(partResource.resourceName))
+                if(!this.availableResources.ContainsKey(partResource.resourceName))
                 {
-                    this.availableResources.Add(partResource.resourceName);
-
-                    if(!this.visibleResources.Contains(partResource.resourceName))
-                    {
-                        this.visibleResources.Add(partResource.resourceName);
-                    }
+                    this.availableResources.Add(partResource.resourceName, new ResourceInfo());
+                }
+                else
+                {
+                    this.availableResources[partResource.resourceName].PartCount++;
                 }
             }
-
-            this.availableResources.Sort();
-            this.visibleResources.Sort();
         }
 
         private void OnShipLoad(ShipConstruct ship, CraftBrowserDialog.LoadType loadType)
         {
             this.GetVesselResources();
-
-            this.visibleResources = new List<string>(this.availableResources);
         }
 
         void OnEditorStarted()
         {
-            this.visibleResources.Clear();
-
             this.InitAvailableResources();
         }
 
@@ -224,11 +219,6 @@ namespace PartWizard
 
             this.GetVesselResources();
 
-            if(this.visibleResources.Count == 0)
-            {
-                this.visibleResources = new List<string>(availableResources);
-            }
-
             List<GUIContent> viewTypeContentList = new List<GUIContent>() {
                 new GUIContent(Localized.ViewTypeAll),
                 new GUIContent(Localized.ViewTypeHidden),
@@ -248,15 +238,16 @@ namespace PartWizard
 
         private void OnPartRemove(GameEvents.HostTargetAction<Part, Part> e)
         {
-
             foreach(PartResource partResource in e.target.Resources)
             {
-                this.availableResources.Remove(partResource.resourceName);
-                this.visibleResources.Remove(partResource.resourceName);
+                this.availableResources[partResource.resourceName].PartCount--;
+
+                if(this.availableResources[partResource.resourceName].PartCount == 0)
+                {
+                    this.availableResources.Remove(partResource.resourceName);
+                }
             }
-
-            this.availableResources.Sort();
-
+            
             if(this.symmetryEditorWindow.Visible)
             {
                 if(PartWizard.IsSibling(e.target, this.symmetryEditorWindow.Part))
@@ -369,29 +360,25 @@ namespace PartWizard
                 {
                     if(GUILayout.Button(Localized.ViewAll))
                     {
-                        visibleResources = new List<string>(availableResources);
+                        foreach(ResourceInfo resourceInfo in this.availableResources.Values)
+                        {
+                            resourceInfo.Visible = true;
+                        }
                     }
 
                     if(GUILayout.Button(Localized.Clear))
                     {
-                        visibleResources.Clear();
+                        foreach(ResourceInfo resourceInfo in this.availableResources.Values)
+                        {
+                            resourceInfo.Visible = false;
+                        }
                     }
 
-                    foreach(string availableResource in availableResources)
+                    foreach(string availableResource in this.availableResources.Keys)
                     {
-                        bool resourceVisible = visibleResources.Contains(availableResource);
+                        bool resourceVisible = GUILayout.Toggle(this.availableResources[availableResource].Visible, availableResource, toggleStyle);
 
-                        bool currentResourceVisible = GUILayout.Toggle(resourceVisible, availableResource, toggleStyle);
-
-                        if(resourceVisible && !currentResourceVisible)
-                        {
-                            visibleResources.Remove(availableResource);
-                        }
-
-                        if(!resourceVisible && currentResourceVisible)
-                        {
-                            visibleResources.Add(availableResource);
-                        }
+                        this.availableResources[availableResource].Visible = resourceVisible;
                     }
                 }
                 else
@@ -405,25 +392,25 @@ namespace PartWizard
                         if(visibleCategories[(int)part.partInfo.category])
                         {
                             // The part's category is visible, now check resource conditions to determine final visibility.
-                            bool resourceVisible = false;
+                            bool partVisible = false;
 
-                            if(visibleResources.Contains(Localized.ShowPartsWithoutResources) && part.Resources.Count == 0)
+                            if(this.availableResources[Localized.ShowPartsWithoutResources].Visible && part.Resources.Count == 0)
                             {
-                                resourceVisible = true;
+                                partVisible = true;
                             }
                             else
                             {
                                 foreach(PartResource partResource in part.Resources)
                                 {
-                                    if(visibleResources.Contains(partResource.resourceName))
+                                    if(this.availableResources[partResource.resourceName].Visible)
                                     {
-                                        resourceVisible = true;
+                                        partVisible = true;
                                         break;
                                     }
                                 }
                             }
 
-                            if(resourceVisible)
+                            if(partVisible)
                             {
                                 totalEntryCost += part.partInfo.entryCost;
                                 visiblePartCount++;
@@ -675,33 +662,36 @@ namespace PartWizard
 
                 // Push everything above this up, otherwise it will be centered vertically.
                 GUILayout.FlexibleSpace();
-                
-                string status = default(string);
 
-                if(!string.IsNullOrEmpty(GUI.tooltip))
+                if(viewType == ViewType.All || viewType == ViewType.Hidden || viewType == ViewType.Unavailable)
                 {
-                    if(parts.Count != 1)
+                    string status = default(string);
+
+                    if(!string.IsNullOrEmpty(GUI.tooltip))
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
+                        if(parts.Count != 1)
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
+                        }
+                        else
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
+                        }
                     }
                     else
                     {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTooltipTextFormat, visiblePartCount, GUI.tooltip, parts.Count - visiblePartCount);
+                        if(parts.Count != 1)
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTextFormat, visiblePartCount, parts.Count - visiblePartCount);
+                        }
+                        else
+                        {
+                            status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTextFormat, visiblePartCount, parts.Count - visiblePartCount);
+                        }
                     }
-                }
-                else
-                {
-                    if(parts.Count != 1)
-                    {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelPluralTextFormat, visiblePartCount, parts.Count - visiblePartCount);
-                    }
-                    else
-                    {
-                        status = string.Format(CultureInfo.CurrentCulture, Localized.StatusLabelSingularTextFormat, visiblePartCount, parts.Count - visiblePartCount);
-                    }
-                }
 
-                GUILayout.Label(status, this.tooltipLabelStyle);
+                    GUILayout.Label(status, this.tooltipLabelStyle);
+                }
 
                 #endregion
 
