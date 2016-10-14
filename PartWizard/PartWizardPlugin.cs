@@ -192,10 +192,7 @@ namespace PartWizard
                     ApplicationLauncher.AppScenes.VAB | ApplicationLauncher.AppScenes.SPH,
                     (Texture)GameDatabase.Instance.GetTexture(StockToolbarIconActive, false));
 
-               // if(this.partWizardWindow.Visible)
-                {
-                    partWizardStockButton.SetTexture((Texture)GameDatabase.Instance.GetTexture(this.partWizardWindow.Visible ? this.toolbarIconActive : this.toolbarIconInactive, false));
-                }
+                partWizardStockButton.SetTexture((Texture)GameDatabase.Instance.GetTexture(this.partWizardWindow.Visible ? this.toolbarIconActive : this.toolbarIconInactive, false));
             }
         }
 
