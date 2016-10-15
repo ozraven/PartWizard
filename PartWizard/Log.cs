@@ -112,6 +112,31 @@ namespace PartWizard
         {
             UnityEngine.Debug.Log(string.Format(CultureInfo.InvariantCulture, "{0} {1}", Log.Prefix, string.Format(CultureInfo.InvariantCulture, format, args)));
         }
+
+        public static void WriteStyleReport(GUIStyle style, string description)
+        {
+#if DEBUG
+            if(style != null)
+            {
+                Log.Write("STYLE REPORT FOR {0}:", description);
+                Log.Write("\tname = {0}", style.name);
+                Log.Write("\tnormal.textColor = {0}", Log.ColorToRGB(style.normal.textColor));
+                Log.Write("\tonActive.textColor = {0}", Log.ColorToRGB(style.onActive.textColor));
+                Log.Write("\tonNormal.textColor = {0}", Log.ColorToRGB(style.onNormal.textColor));
+                Log.Write("\tonHover.textColor = {0}", Log.ColorToRGB(style.onHover.textColor));
+                Log.Write("END OF STYLE REPORT");
+            }
+            else
+            {
+                Log.Write("STYLE REPORT FOR {0}: null", description);
+            }
+#endif
+        }
+
+        private static string ColorToRGB(Color color)
+        {
+            return string.Format("#{0:X2}{1:X2}{2:X2}", (byte)(Mathf.Clamp01(color.r)), (byte)(Mathf.Clamp01(color.g)), (byte)(Mathf.Clamp01(color.b)));
+        }
         
         public static void WriteSymmetryReport(Part part)
         {

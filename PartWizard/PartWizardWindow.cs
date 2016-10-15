@@ -91,7 +91,7 @@ namespace PartWizard
 
         private SymmetryEditorWindow symmetryEditorWindow;
 
-        void InitAvailableResources()
+        private void InitAvailableResources()
         {
             this.availableResources = new SortedDictionary<string, ResourceInfo>();
             this.availableResources.Add(Localized.ShowPartsWithoutResources, new ResourceInfo());
