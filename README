@@ -1,5 +1,5 @@
 ﻿Part Wizard Plugin for Kerbal Space Program
-Version 1.2.5.0
+Version 1.3.0.0
 
 http://forum.kerbalspaceprogram.com/threads/80124/
 
@@ -16,7 +16,8 @@ http://forum.kerbalspaceprogram.com/threads/80124/
    d. Editing Symmetry
    e. Selecting Parts for Action Group Assignment
    f. Undoing an Operation
-6. Copyright and Licensing Information
+6. Contributors
+7. Copyright and Licensing Information
 
 1. Features
 
@@ -27,11 +28,10 @@ http://forum.kerbalspaceprogram.com/threads/80124/
   * In career or science games, shows all parts that are currently unavailable.
     * Eligible[4] parts can be purchased directly from Part Wizard.
 * Allows selecting parts from the list for action group assignments.
- 
- Following added by LinuxGuruGamer
-* Shows bad struts & bad fuel lines in red, all other parts now in green
-* Can display specific category(s) of parts
-* Can display only parts with specified resources
+* Part List Filtering
+  * Unlinked struts and fuel lines are highlighted in red.
+  * Filter by part category.
+  * Filter by specific resources.
 
 [1] Parts eligible for deleting via Part Wizard are those that are not the "root" part and have no attached parts.
 [2] Symmetry editing modifies the designated part, its counter parts and all symmetrical child parts.
@@ -93,7 +93,19 @@ The Part Wizard toolbar icon is only available in the Vehicle Assembly Building 
 
 	[1] Module Manager is a plugin for patching parts at load time, maintained by sarbian: http://forum.kerbalspaceprogram.com/threads/55219/
 
-6. Copyright and Licensing Information
+6. Contributors
+
+Much appreciation and thanks to the contributors of Part Wizard, and if I missed anyone I'll be sure to update this in a future release.
+
+  * sarbian for reviewing Part Wizard before the first release, making suggestions and continual help and advice.
+  * m4v for allowing me to base the editor locking code on his mod, RCS Build Aid.
+  * antgeth for the feature idea that became Symmetry Editor.
+  * Vlos for the Action Group part selection feature.
+  * Papa_Joe for adding support for the stock toolbar support contribution.
+  * linuxgurugamer for general updates and finally adding the long-planned filtering features.
+  * Everyone involved in with KSP that adds their ideas, time and thoughts to make a fun community for all of us to play with.
+	
+7. Copyright and Licensing Information
 
 Part Wizard contains portions of "Toolbar" licensed under the terms of the "Simplified BSD License" and is copyright (c) Maik Schreiber. (http://opensource.org/licenses/BSD-2-Clause)
 Part Wizard is licensed, as follows, under the terms of the "Modified BSD License": http://opensource.org/licenses/BSD-3-Clause
